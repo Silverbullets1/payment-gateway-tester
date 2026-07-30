@@ -1,0 +1,24 @@
+{
+  "name": "payment-gateway-tester",
+  "version": "3.0.0",
+  "description": "Burp-style payment gateway testing with real-time browser and bug detection.",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve .",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "security",
+    "bug-bounty",
+    "payment-gateway",
+    "razorpay",
+    "paypal",
+    "stripe",
+    "penetration-testing"
+  ],
+  "author": "Archive Gateway",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}
