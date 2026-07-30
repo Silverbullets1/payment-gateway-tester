@@ -1,23 +1,16 @@
 {
-  "rewrites": [
+  "name": "payment-gateway-proxy",
+  "version": 2,
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "proxy-server.js",
+      "use": "@vercel/node"
     }
   ],
-  "headers": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "no-referrer"
-        }
-      ]
+      "src": "/(.*)",
+      "dest": "proxy-server.js"
     }
   ]
 }
