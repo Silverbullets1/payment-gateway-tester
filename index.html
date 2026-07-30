@@ -11,7 +11,7 @@
     </script>
     <style>
         /* ============================================================
-           BURP-STYLE DARK THEME — FULL TOOL
+           BURP-STYLE DARK THEME — v4.0 WITH ERROR HANDLING
            ============================================================ */
         * {
             margin: 0;
@@ -38,13 +38,13 @@
             padding: 0.4rem 1rem;
             display: flex;
             align-items: center;
-            gap: 0.8rem;
+            gap: 0.6rem;
             flex-wrap: wrap;
             flex-shrink: 0;
             min-height: 48px;
         }
         .topbar .brand {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             letter-spacing: 2px;
             color: #6a5f52;
             white-space: nowrap;
@@ -54,18 +54,22 @@
         }
         .topbar input {
             flex: 1;
-            min-width: 200px;
+            min-width: 180px;
             background: #12100e;
             border: 1px solid #2a2520;
             padding: 0.35rem 0.7rem;
             color: #d4cdc0;
             font-family: 'Courier New', monospace;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             border-radius: 4px;
             outline: none;
         }
         .topbar input:focus {
             border-color: #6a5f52;
+        }
+        .topbar input::placeholder {
+            color: #3a352a;
+            font-size: 0.6rem;
         }
         .topbar .btn {
             background: transparent;
@@ -73,7 +77,7 @@
             color: #d4cdc0;
             padding: 0.25rem 0.9rem;
             font-family: 'Courier New', monospace;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             letter-spacing: 0.8px;
             border-radius: 4px;
             cursor: pointer;
@@ -101,12 +105,20 @@
             background: #2a1816;
             border-color: #aa5a4a;
         }
+        .topbar .btn.warning {
+            border-color: #6a6a3a;
+            color: #caca8a;
+        }
+        .topbar .btn.warning:hover:not(:disabled) {
+            background: #1a1a0a;
+            border-color: #aaaa6a;
+        }
         .topbar .btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
         }
         .topbar .badge {
-            font-size: 0.5rem;
+            font-size: 0.48rem;
             padding: 0.1rem 0.6rem;
             border: 1px solid #3a322a;
             border-radius: 10px;
@@ -118,6 +130,31 @@
             border-color: #4a7a4a;
             color: #8aba8a;
             background: #0a1a0a;
+        }
+        .topbar .badge.error {
+            border-color: #6a3a3a;
+            color: #d48a7a;
+            background: #1a0a0a;
+        }
+        .topbar .badge.warning {
+            border-color: #6a6a3a;
+            color: #caca8a;
+            background: #1a1a0a;
+        }
+
+        .topbar .status-text {
+            font-size: 0.5rem;
+            color: #3a352a;
+            white-space: nowrap;
+        }
+        .topbar .status-text.ok {
+            color: #4a7a4a;
+        }
+        .topbar .status-text.err {
+            color: #d48a7a;
+        }
+        .topbar .status-text.loading {
+            color: #caca8a;
         }
 
         /* ─── MAIN LAYOUT ─── */
@@ -146,10 +183,11 @@
             gap: 0.4rem;
             flex-shrink: 0;
             min-height: 30px;
+            flex-wrap: wrap;
         }
         .browser-panel .browser-toolbar .url-display {
             flex: 1;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             color: #5a4f42;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -158,6 +196,7 @@
             background: #12100e;
             border-radius: 3px;
             border: 1px solid #1e1a16;
+            min-width: 80px;
         }
         .browser-panel .browser-toolbar .btn-sm {
             background: transparent;
@@ -168,14 +207,30 @@
             border-radius: 3px;
             cursor: pointer;
             transition: all 0.2s;
+            font-family: 'Courier New', monospace;
         }
         .browser-panel .browser-toolbar .btn-sm:hover {
             background: #1a1612;
             border-color: #4a4a3a;
         }
+        .browser-panel .browser-toolbar .btn-sm.primary {
+            color: #8aba8a;
+            border-color: #4a7a4a;
+        }
+        .browser-panel .browser-toolbar .btn-sm.primary:hover {
+            background: #0a1a0a;
+        }
+        .browser-panel .browser-toolbar .btn-sm.danger {
+            color: #d48a7a;
+            border-color: #6a3a3a;
+        }
+        .browser-panel .browser-toolbar .btn-sm.danger:hover {
+            background: #1a0a0a;
+        }
+
         .browser-frame {
             flex: 1;
-            background: #ffffff;
+            background: #0a0808;
             position: relative;
             min-height: 200px;
         }
@@ -194,17 +249,26 @@
             font-size: 0.8rem;
             pointer-events: none;
             text-align: center;
+            max-width: 80%;
         }
         .browser-frame .overlay-msg .icon {
-            font-size: 2rem;
+            font-size: 2.5rem;
             display: block;
             margin-bottom: 0.3rem;
+        }
+        .browser-frame .overlay-msg .sub {
+            font-size: 0.6rem;
+            color: #3a352a;
+            margin-top: 0.2rem;
+        }
+        .browser-frame .overlay-msg .sub .highlight {
+            color: #d48a7a;
         }
 
         /* ─── RIGHT: REQUEST PANEL ─── */
         .request-panel {
-            width: 420px;
-            min-width: 300px;
+            width: 440px;
+            min-width: 280px;
             max-width: 50vw;
             background: #0c0a0a;
             display: flex;
@@ -217,10 +281,11 @@
             border-bottom: 1px solid #1a1612;
             flex-shrink: 0;
             background: #0a0808;
+            overflow-x: auto;
         }
         .request-panel .panel-tabs .tab {
-            padding: 0.3rem 0.8rem;
-            font-size: 0.55rem;
+            padding: 0.3rem 0.7rem;
+            font-size: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: #5a4f42;
@@ -232,6 +297,7 @@
             border-left: none;
             border-right: none;
             font-family: 'Courier New', monospace;
+            white-space: nowrap;
         }
         .request-panel .panel-tabs .tab:hover {
             color: #8a7f6e;
@@ -240,6 +306,23 @@
             color: #d4cdc0;
             border-bottom-color: #4a7a4a;
         }
+        .request-panel .panel-tabs .tab .badge-count {
+            background: #2a2520;
+            color: #5a4f42;
+            font-size: 0.45rem;
+            padding: 0.05rem 0.4rem;
+            border-radius: 8px;
+            margin-left: 0.3rem;
+        }
+        .request-panel .panel-tabs .tab .badge-count.danger {
+            background: #2a1816;
+            color: #d48a7a;
+        }
+        .request-panel .panel-tabs .tab .badge-count.success {
+            background: #0a1a0a;
+            color: #8aba8a;
+        }
+
         .request-panel .panel-content {
             flex: 1;
             overflow: hidden;
@@ -250,7 +333,7 @@
             display: none;
             flex: 1;
             overflow: auto;
-            padding: 0.6rem;
+            padding: 0.5rem 0.6rem;
             flex-direction: column;
         }
         .request-panel .panel-content .tab-content.active {
@@ -259,19 +342,20 @@
 
         /* ─── REQUEST VIEWER ─── */
         .request-viewer {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-family: 'Courier New', monospace;
             white-space: pre-wrap;
             word-break: break-all;
             line-height: 1.5;
             color: #b4a8a0;
             background: #0a0808;
-            padding: 0.5rem;
+            padding: 0.4rem;
             border-radius: 3px;
             border: 1px solid #1a1612;
             flex: 1;
             overflow: auto;
-            min-height: 80px;
+            min-height: 60px;
+            max-height: 200px;
         }
         .request-viewer .method {
             color: #8aba8a;
@@ -288,36 +372,46 @@
         .request-viewer .value {
             color: #b4a8a0;
         }
+        .request-viewer .error {
+            color: #d48a7a;
+            font-weight: bold;
+        }
+        .request-viewer .success {
+            color: #8aba8a;
+        }
+        .request-viewer .warn {
+            color: #caca8a;
+        }
 
         /* ─── MANUAL INPUTS ─── */
         .input-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.4rem;
-            margin: 0.3rem 0;
+            gap: 0.3rem;
+            margin: 0.2rem 0;
         }
         .input-group label {
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: #5a4f42;
             display: flex;
             align-items: center;
             gap: 0.3rem;
-            min-width: 60px;
+            min-width: 50px;
         }
         .input-group input,
         .input-group select {
             background: #12100e;
             border: 1px solid #2a2520;
-            padding: 0.2rem 0.5rem;
+            padding: 0.2rem 0.4rem;
             color: #d4cdc0;
             font-family: 'Courier New', monospace;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             border-radius: 3px;
             outline: none;
             flex: 1;
-            min-width: 60px;
+            min-width: 50px;
         }
         .input-group input:focus,
         .input-group select:focus {
@@ -327,11 +421,13 @@
             background: transparent;
             border: 1px solid #3a322a;
             color: #d4cdc0;
-            padding: 0.15rem 0.6rem;
-            font-size: 0.5rem;
+            padding: 0.15rem 0.5rem;
+            font-size: 0.48rem;
             border-radius: 3px;
             cursor: pointer;
             transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            white-space: nowrap;
         }
         .input-group .btn-sm:hover {
             background: #2a2520;
@@ -351,18 +447,26 @@
         .input-group .btn-sm.danger:hover {
             background: #2a1816;
         }
+        .input-group .btn-sm.warning {
+            border-color: #6a6a3a;
+            color: #caca8a;
+        }
+        .input-group .btn-sm.warning:hover {
+            background: #1a1a0a;
+        }
 
-        /* ─── BUG DETECTION OUTPUT ─── */
+        /* ─── BUG OUTPUT ─── */
         .bug-output {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             background: #0a0808;
             border: 1px solid #1a1612;
             border-radius: 3px;
-            padding: 0.4rem;
-            max-height: 120px;
+            padding: 0.3rem 0.4rem;
+            max-height: 140px;
             overflow: auto;
-            margin-top: 0.3rem;
+            margin-top: 0.2rem;
             line-height: 1.6;
+            flex: 1;
         }
         .bug-output .success {
             color: #8aba8a;
@@ -376,12 +480,15 @@
         .bug-output .warn {
             color: #caca8a;
         }
+        .bug-output .bold {
+            font-weight: bold;
+        }
 
         .status-badge {
             display: inline-block;
             padding: 0.05rem 0.5rem;
             border-radius: 10px;
-            font-size: 0.5rem;
+            font-size: 0.48rem;
             letter-spacing: 0.8px;
             text-transform: uppercase;
             border: 1px solid #3a322a;
@@ -406,6 +513,46 @@
             color: #8ab4c4;
             background: #0a1a1a;
         }
+        .status-badge.warning {
+            border-color: #6a6a3a;
+            color: #caca8a;
+            background: #1a1a0a;
+        }
+
+        /* ─── SESSION VALIDITY CHECK ─── */
+        .session-status {
+            font-size: 0.55rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            margin: 0.2rem 0;
+            background: #0a0808;
+            border: 1px solid #1a1612;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .session-status .label {
+            color: #5a4f42;
+            text-transform: uppercase;
+            font-size: 0.48rem;
+            letter-spacing: 0.8px;
+        }
+        .session-status .value {
+            color: #d4cdc0;
+            word-break: break-all;
+            flex: 1;
+            font-size: 0.55rem;
+        }
+        .session-status .value.valid {
+            color: #8aba8a;
+        }
+        .session-status .value.invalid {
+            color: #d48a7a;
+        }
+        .session-status .value.unknown {
+            color: #caca8a;
+        }
 
         /* ─── TOAST ─── */
         .toast-container {
@@ -416,7 +563,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.4rem;
-            max-width: 320px;
+            max-width: 340px;
             width: calc(100% - 40px);
         }
         .toast {
@@ -480,64 +627,6 @@
             border-radius: 4px;
         }
 
-        /* ─── RESPONSIVE ─── */
-        @media (max-width: 820px) {
-            .main {
-                flex-direction: column;
-                height: auto;
-            }
-            .request-panel {
-                width: 100%;
-                max-width: 100%;
-                border-left: none;
-                border-top: 1px solid #1a1612;
-                min-height: 300px;
-                max-height: 50vh;
-            }
-            .browser-frame {
-                min-height: 300px;
-            }
-            .topbar {
-                padding: 0.3rem 0.6rem;
-                gap: 0.4rem;
-            }
-            .topbar .brand {
-                font-size: 0.6rem;
-            }
-            .topbar input {
-                font-size: 0.6rem;
-                min-width: 100px;
-            }
-            .topbar .btn {
-                font-size: 0.5rem;
-                padding: 0.15rem 0.6rem;
-            }
-        }
-        @media (max-width: 500px) {
-            .topbar .brand {
-                display: none;
-            }
-            .topbar input {
-                min-width: 60px;
-                font-size: 0.5rem;
-                padding: 0.2rem 0.4rem;
-            }
-            .request-panel {
-                min-height: 200px;
-                max-height: 40vh;
-            }
-            .browser-frame {
-                min-height: 200px;
-            }
-            .input-group {
-                flex-direction: column;
-                gap: 0.2rem;
-            }
-            .input-group label {
-                min-width: auto;
-            }
-        }
-
         /* ─── QR POPUP ─── */
         .qr-popup {
             position: fixed;
@@ -571,7 +660,7 @@
             color: #d4cdc0;
         }
         .qr-popup .label {
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             color: #5a4f42;
@@ -590,9 +679,108 @@
         }
         .qr-popup .upi-id {
             margin-top: 0.5rem;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #8a7f6e;
             word-break: break-all;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 820px) {
+            .main {
+                flex-direction: column;
+                height: auto;
+                overflow-y: auto;
+            }
+            .request-panel {
+                width: 100%;
+                max-width: 100%;
+                border-left: none;
+                border-top: 1px solid #1a1612;
+                min-height: 280px;
+                max-height: 45vh;
+            }
+            .browser-frame {
+                min-height: 280px;
+            }
+            .topbar {
+                padding: 0.3rem 0.6rem;
+                gap: 0.3rem;
+            }
+            .topbar .brand {
+                font-size: 0.55rem;
+            }
+            .topbar input {
+                font-size: 0.55rem;
+                min-width: 80px;
+                padding: 0.25rem 0.5rem;
+            }
+            .topbar .btn {
+                font-size: 0.45rem;
+                padding: 0.15rem 0.5rem;
+            }
+            .topbar .badge {
+                font-size: 0.4rem;
+                padding: 0.05rem 0.4rem;
+            }
+        }
+        @media (max-width: 500px) {
+            .topbar .brand {
+                display: none;
+            }
+            .topbar input {
+                min-width: 50px;
+                font-size: 0.45rem;
+            }
+            .request-panel {
+                min-height: 200px;
+                max-height: 40vh;
+            }
+            .browser-frame {
+                min-height: 200px;
+            }
+            .input-group {
+                flex-direction: column;
+                gap: 0.15rem;
+            }
+            .input-group label {
+                min-width: auto;
+            }
+            .request-panel .panel-tabs .tab {
+                font-size: 0.4rem;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+
+        /* ─── HIDDEN UTILITY ─── */
+        .hidden {
+            display: none !important;
+        }
+        .flex-center {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .mt-1 {
+            margin-top: 0.3rem;
+        }
+        .mb-1 {
+            margin-bottom: 0.3rem;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .gap-1 {
+            gap: 0.3rem;
+        }
+        .text-muted {
+            color: #3a352a;
+        }
+        .text-small {
+            font-size: 0.5rem;
+        }
+        .text-center {
+            text-align: center;
         }
     </style>
 </head>
@@ -604,8 +792,9 @@
         <input type="url" id="urlInput" placeholder="https://api.cashfree.com/pg/view/gateway/session_..." value="https://api.cashfree.com/pg/view/gateway/session_oWgYiSE3todrLLHMDfhFuv6YVVECawv8PZwK668R5TxF1XpmIIYaFKHddMgtgkYLZsY1x4Nl8S1HNk7o0sj_oVPDKqnuprifZyQ4s7rzANI2WO0OnUxtSSKMTG4paymentCH-20260730-113510-L9ZU01" />
         <button class="btn primary" id="loadBtn">⟳ Load</button>
         <button class="btn" id="reloadBtn">⟲ Reload</button>
+        <button class="btn warning" id="openNewTabBtn">⤷ Open in New Tab</button>
         <span class="badge" id="gatewayBadge">⏳ detecting...</span>
-        <span style="font-size:0.5rem;color:#3a352a;" id="statusText">ready</span>
+        <span class="status-text" id="statusText">ready</span>
     </div>
 
     <!-- ─── MAIN ─── -->
@@ -619,13 +808,15 @@
                 <button class="btn-sm" id="goBackBtn">◀</button>
                 <button class="btn-sm" id="goForwardBtn">▶</button>
                 <button class="btn-sm" id="refreshFrameBtn">⟲</button>
+                <button class="btn-sm danger" id="clearCacheBtn">✗ Clear</button>
             </div>
             <div class="browser-frame" id="browserFrame">
-                <iframe id="gatewayFrame" sandbox="allow-scripts allow-forms allow-same-origin allow-popups"></iframe>
+                <iframe id="gatewayFrame" sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-modals"></iframe>
                 <div class="overlay-msg" id="frameOverlay">
                     <span class="icon">⌬</span>
                     Load a gateway URL to begin<br/>
-                    <span style="font-size:0.6rem;color:#3a352a;">OTP, phone, and params can be injected manually</span>
+                    <span class="sub">Paste a link in the top bar and click <span class="highlight">Load</span></span>
+                    <span class="sub" style="margin-top:0.3rem;font-size:0.5rem;">💡 If the page shows "Broken Link", the session may be expired.<br/>Click <span style="color:#caca8a;">Open in New Tab</span> to test directly.</span>
                 </div>
             </div>
         </div>
@@ -636,8 +827,8 @@
             <!-- Tabs -->
             <div class="panel-tabs">
                 <button class="tab active" data-tab="params">Params</button>
-                <button class="tab" data-tab="headers">Headers</button>
-                <button class="tab" data-tab="bugs">Bugs</button>
+                <button class="tab" data-tab="session">Session</button>
+                <button class="tab" data-tab="bugs">Bugs <span class="badge-count" id="bugBadge">0</span></button>
                 <button class="tab" data-tab="manual">Manual</button>
             </div>
 
@@ -646,40 +837,65 @@
 
                 <!-- ─── PARAMS TAB ─── -->
                 <div class="tab-content active" id="tabParams">
-                    <div style="font-size:0.55rem;color:#5a4f42;margin-bottom:0.2rem;">Detected parameters from URL</div>
-                    <div class="request-viewer" id="paramsViewer" style="min-height:60px;max-height:200px;">
+                    <div style="font-size:0.5rem;color:#5a4f42;margin-bottom:0.15rem;">Detected parameters from URL</div>
+                    <div class="request-viewer" id="paramsViewer" style="min-height:50px;max-height:160px;">
                         <span style="color:#5a4f42;">No parameters detected yet</span>
                     </div>
-                    <div style="margin-top:0.3rem;">
-                        <div style="font-size:0.55rem;color:#5a4f42;">Amount: <span id="detectedAmount" style="color:#8aba8a;">—</span></div>
-                        <div style="font-size:0.55rem;color:#5a4f42;">Session: <span id="detectedSession" style="color:#8ab4c4;">—</span></div>
-                        <div style="font-size:0.55rem;color:#5a4f42;">Gateway: <span id="detectedGatewayName" style="color:#caca8a;">—</span></div>
+                    <div style="margin-top:0.2rem;display:flex;flex-wrap:wrap;gap:0.3rem;font-size:0.5rem;color:#5a4f42;">
+                        <span>Amount: <span id="detectedAmount" style="color:#8aba8a;">—</span></span>
+                        <span>|</span>
+                        <span>Session: <span id="detectedSession" style="color:#8ab4c4;">—</span></span>
+                        <span>|</span>
+                        <span>Gateway: <span id="detectedGatewayName" style="color:#caca8a;">—</span></span>
                     </div>
+                    <button class="btn-sm primary" id="copyParamsBtn" style="margin-top:0.2rem;font-size:0.45rem;padding:0.1rem 0.5rem;">📋 Copy Params</button>
                 </div>
 
-                <!-- ─── HEADERS TAB ─── -->
-                <div class="tab-content" id="tabHeaders">
-                    <div style="font-size:0.55rem;color:#5a4f42;margin-bottom:0.2rem;">Request/Response headers</div>
-                    <div class="request-viewer" id="headersViewer" style="min-height:60px;max-height:200px;">
-                        <span style="color:#5a4f42;">Headers will appear here</span>
+                <!-- ─── SESSION TAB ─── -->
+                <div class="tab-content" id="tabSession">
+                    <div style="font-size:0.5rem;color:#5a4f42;margin-bottom:0.15rem;">Session validity check</div>
+                    <div class="session-status" id="sessionStatus">
+                        <span class="label">Status:</span>
+                        <span class="value unknown" id="sessionValidity">⏳ checking...</span>
+                    </div>
+                    <div class="session-status">
+                        <span class="label">Session ID:</span>
+                        <span class="value" id="sessionIdDisplay" style="font-size:0.5rem;">—</span>
+                    </div>
+                    <div class="session-status">
+                        <span class="label">Gateway:</span>
+                        <span class="value" id="sessionGatewayDisplay" style="font-size:0.5rem;">—</span>
+                    </div>
+                    <div style="margin-top:0.3rem;display:flex;gap:0.3rem;flex-wrap:wrap;">
+                        <button class="btn-sm success" id="checkSessionBtn">⤷ Check Session</button>
+                        <button class="btn-sm warning" id="refreshSessionBtn">⤷ Refresh</button>
+                        <button class="btn-sm danger" id="openNewTabSessionBtn">⤷ Open in New Tab</button>
+                    </div>
+                    <div class="bug-output" id="sessionLog" style="margin-top:0.3rem;max-height:80px;font-size:0.5rem;">
+                        <span style="color:#5a4f42;">Click "Check Session" to test validity</span>
                     </div>
                 </div>
 
                 <!-- ─── BUGS TAB ─── -->
                 <div class="tab-content" id="tabBugs">
-                    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.3rem;">
+                    <div style="display:flex;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.2rem;">
                         <button class="btn-sm success" id="scanC2SBtn">⤷ Scan C2S</button>
                         <button class="btn-sm danger" id="scanTamperBtn">⤷ Scan Price Tamper</button>
-                        <button class="btn-sm" id="scanAllBtn">⤷ Full Scan</button>
+                        <button class="btn-sm warning" id="scanAllBtn">⤷ Full Scan</button>
+                        <button class="btn-sm" id="clearBugsBtn">✗ Clear</button>
                     </div>
                     <div class="bug-output" id="bugOutput">
                         <span style="color:#5a4f42;">Click a scan button to start</span>
+                    </div>
+                    <div style="margin-top:0.2rem;display:flex;gap:0.3rem;flex-wrap:wrap;font-size:0.45rem;color:#5a4f42;">
+                        <span>C2S: <span id="c2sResultBadge" class="status-badge pending">Not tested</span></span>
+                        <span>Tamper: <span id="tamperResultBadge" class="status-badge pending">Not tested</span></span>
                     </div>
                 </div>
 
                 <!-- ─── MANUAL TAB ─── -->
                 <div class="tab-content" id="tabManual">
-                    <div style="font-size:0.55rem;color:#5a4f42;margin-bottom:0.2rem;">Manual injection — OTP, phone, custom params</div>
+                    <div style="font-size:0.5rem;color:#5a4f42;margin-bottom:0.15rem;">Manual injection — OTP, phone, custom params</div>
 
                     <div class="input-group">
                         <label>OTP</label>
@@ -695,17 +911,17 @@
 
                     <div class="input-group">
                         <label>Custom</label>
-                        <input type="text" id="manualKey" placeholder="param" style="flex:0.5;min-width:40px;" />
+                        <input type="text" id="manualKey" placeholder="param" style="flex:0.4;min-width:40px;" />
                         <input type="text" id="manualValue" placeholder="value" style="flex:1;" />
                         <button class="btn-sm success" id="injectCustomBtn">+ Add</button>
                     </div>
 
-                    <div style="font-size:0.55rem;color:#5a4f42;margin-top:0.2rem;">Injected params will appear in URL</div>
-                    <div class="request-viewer" id="injectedViewer" style="min-height:40px;max-height:80px;font-size:0.55rem;">
+                    <div style="font-size:0.5rem;color:#5a4f42;margin-top:0.15rem;">Injected params:</div>
+                    <div class="request-viewer" id="injectedViewer" style="min-height:30px;max-height:60px;font-size:0.5rem;">
                         <span style="color:#5a4f42;">No injections yet</span>
                     </div>
 
-                    <div class="input-group" style="margin-top:0.3rem;">
+                    <div class="input-group" style="margin-top:0.2rem;">
                         <label>Payment</label>
                         <select id="paymentMethodSelect">
                             <option value="upi">UPI</option>
@@ -713,8 +929,9 @@
                             <option value="netbanking">NetBanking</option>
                             <option value="wallet">Wallet</option>
                         </select>
-                        <button class="btn-sm success" id="redirectWithTamperBtn">⤷ Redirect with ₹1</button>
-                        <button class="btn-sm" id="showQrBtn">⤷ Show QR/UPI</button>
+                        <button class="btn-sm success" id="redirectWithTamperBtn">⤷ Redirect ₹1</button>
+                        <button class="btn-sm warning" id="showQrBtn">⤷ QR/UPI</button>
+                        <button class="btn-sm danger" id="resetInjectionsBtn">✗ Reset</button>
                     </div>
                 </div>
             </div>
@@ -728,6 +945,7 @@
         <div id="qrPopupContainer"></div>
         <div class="upi-id" id="qrPopupUpiId">UPI: merchant@upi</div>
         <div style="font-size:0.6rem;color:#5a4f42;margin-top:0.3rem;" id="qrPopupAmount">₹ 0.00</div>
+        <button class="btn-sm success" id="copyUpiBtn" style="margin-top:0.4rem;font-size:0.45rem;padding:0.1rem 0.6rem;">📋 Copy UPI ID</button>
     </div>
 
     <!-- ─── TOAST ─── -->
@@ -735,7 +953,7 @@
 
     <script>
         /* ==============================================================
-           BURP-STYLE TOOL — Real-time Browser + Bug Detection
+           BURP-STYLE TOOL v4.0 — With Error Handling & Session Check
            ============================================================== */
 
         (function() {
@@ -745,6 +963,8 @@
             const urlInput = document.getElementById('urlInput');
             const loadBtn = document.getElementById('loadBtn');
             const reloadBtn = document.getElementById('reloadBtn');
+            const openNewTabBtn = document.getElementById('openNewTabBtn');
+            const openNewTabSessionBtn = document.getElementById('openNewTabSessionBtn');
             const gatewayFrame = document.getElementById('gatewayFrame');
             const currentUrlDisplay = document.getElementById('currentUrlDisplay');
             const frameOverlay = document.getElementById('frameOverlay');
@@ -753,15 +973,22 @@
             const goBackBtn = document.getElementById('goBackBtn');
             const goForwardBtn = document.getElementById('goForwardBtn');
             const refreshFrameBtn = document.getElementById('refreshFrameBtn');
+            const clearCacheBtn = document.getElementById('clearCacheBtn');
 
             const paramsViewer = document.getElementById('paramsViewer');
-            const headersViewer = document.getElementById('headersViewer');
-            const bugOutput = document.getElementById('bugOutput');
             const injectedViewer = document.getElementById('injectedViewer');
+            const bugOutput = document.getElementById('bugOutput');
+            const sessionLog = document.getElementById('sessionLog');
+            const sessionValidity = document.getElementById('sessionValidity');
+            const sessionIdDisplay = document.getElementById('sessionIdDisplay');
+            const sessionGatewayDisplay = document.getElementById('sessionGatewayDisplay');
 
             const detectedAmount = document.getElementById('detectedAmount');
             const detectedSession = document.getElementById('detectedSession');
             const detectedGatewayName = document.getElementById('detectedGatewayName');
+            const c2sResultBadge = document.getElementById('c2sResultBadge');
+            const tamperResultBadge = document.getElementById('tamperResultBadge');
+            const bugBadge = document.getElementById('bugBadge');
 
             const manualOtp = document.getElementById('manualOtp');
             const manualPhone = document.getElementById('manualPhone');
@@ -772,17 +999,24 @@
             const injectCustomBtn = document.getElementById('injectCustomBtn');
             const redirectWithTamperBtn = document.getElementById('redirectWithTamperBtn');
             const showQrBtn = document.getElementById('showQrBtn');
+            const resetInjectionsBtn = document.getElementById('resetInjectionsBtn');
             const paymentMethodSelect = document.getElementById('paymentMethodSelect');
 
             const scanC2SBtn = document.getElementById('scanC2SBtn');
             const scanTamperBtn = document.getElementById('scanTamperBtn');
             const scanAllBtn = document.getElementById('scanAllBtn');
+            const clearBugsBtn = document.getElementById('clearBugsBtn');
+
+            const checkSessionBtn = document.getElementById('checkSessionBtn');
+            const refreshSessionBtn = document.getElementById('refreshSessionBtn');
+            const copyParamsBtn = document.getElementById('copyParamsBtn');
 
             const qrPopup = document.getElementById('qrPopup');
             const qrPopupClose = document.getElementById('qrPopupClose');
             const qrPopupContainer = document.getElementById('qrPopupContainer');
             const qrPopupUpiId = document.getElementById('qrPopupUpiId');
             const qrPopupAmount = document.getElementById('qrPopupAmount');
+            const copyUpiBtn = document.getElementById('copyUpiBtn');
 
             const toastContainer = document.getElementById('toastContainer');
 
@@ -793,8 +1027,8 @@
                     this.classList.add('active');
                     document.querySelectorAll('.tab-content').forEach(function(tc) { tc.classList.remove(
                         'active'); });
-                    document.getElementById('tab' + this.dataset.tab.charAt(0).toUpperCase() + this.dataset.tab
-                        .slice(1)).classList.add('active');
+                    var target = 'tab' + this.dataset.tab.charAt(0).toUpperCase() + this.dataset.tab.slice(1);
+                    document.getElementById(target).classList.add('active');
                 });
             });
 
@@ -806,12 +1040,15 @@
                 t.innerHTML = '<span>' + msg + '</span><button class="toast-close">&times;</button>';
                 toastContainer.appendChild(t);
                 t.querySelector('.toast-close').addEventListener('click', function() { t.remove(); });
-                setTimeout(function() { if (t.parentNode) t.remove(); }, 5000);
+                setTimeout(function() { if (t.parentNode) t.remove(); }, 6000);
             }
 
             function setStatus(text, type) {
                 statusText.textContent = text;
-                statusText.style.color = type === 'error' ? '#6a3a3a' : type === 'success' ? '#4a7a4a' : '#3a352a';
+                statusText.className = 'status-text';
+                if (type === 'error') statusText.classList.add('err');
+                else if (type === 'success') statusText.classList.add('ok');
+                else if (type === 'loading') statusText.classList.add('loading');
             }
 
             // ─── GATEWAY DATABASE ───
@@ -1026,9 +1263,12 @@
                 isTampered: false,
                 c2sSuccess: false,
                 c2sTested: false,
+                tamperTested: false,
                 injectedParams: {},
                 history: [],
-                historyIndex: -1
+                historyIndex: -1,
+                sessionChecked: false,
+                sessionValid: null
             };
 
             // ─── HELPERS ───
@@ -1096,11 +1336,14 @@
 
             function renderParamsDisplay(params) {
                 var html = '';
+                var count = 0;
                 for (var k in params) {
                     html += '<span class="param">' + sanitize(k) + '</span>: <span class="value">' + sanitize(params[
                         k]) + '</span>\n';
+                    count++;
                 }
-                return html || '<span style="color:#5a4f42;">No parameters</span>';
+                if (count === 0) return '<span style="color:#5a4f42;">No parameters</span>';
+                return html;
             }
 
             function sanitize(str) {
@@ -1112,10 +1355,18 @@
 
             function getCurrentUrl() {
                 try {
-                    return gatewayFrame.contentWindow.location.href;
-                } catch (e) {
-                    return state.url || urlInput.value;
-                }
+                    var u = gatewayFrame.contentWindow.location.href;
+                    if (u && u !== 'about:blank') return u;
+                } catch (e) { /* cross-origin */ }
+                return state.url || urlInput.value;
+            }
+
+            function updateBadgeCount() {
+                var count = 0;
+                if (state.c2sTested) count++;
+                if (state.tamperTested) count++;
+                bugBadge.textContent = count || '0';
+                bugBadge.className = 'badge-count' + (count > 0 ? ' success' : '');
             }
 
             // ─── UPDATE UI ───
@@ -1129,17 +1380,20 @@
                     gatewayBadge.textContent = '⬡ ' + gw.name;
                     gatewayBadge.className = 'badge detected';
                     detectedGatewayName.textContent = gw.name;
+                    sessionGatewayDisplay.textContent = gw.name;
                     state.currency = gw.currency || 'INR';
                     state.tamperedAmount = gw.testAmount || 1.00;
                 } else {
                     gatewayBadge.textContent = '⏳ unknown';
                     gatewayBadge.className = 'badge';
                     detectedGatewayName.textContent = '—';
+                    sessionGatewayDisplay.textContent = '—';
                 }
 
                 var session = extractSessionId(url);
                 state.sessionId = session;
                 detectedSession.textContent = session || '—';
+                sessionIdDisplay.textContent = session || '—';
 
                 var amount = extractAmount(url, gw);
                 state.originalAmount = amount;
@@ -1152,20 +1406,54 @@
                 // Merge injected params
                 var allParams = Object.assign({}, params, state.injectedParams);
                 var injectedDisplay = '';
+                var injCount = 0;
                 for (var k in state.injectedParams) {
                     injectedDisplay += '<span class="param">' + sanitize(k) + '</span>: <span class="value">' + sanitize(
                         state.injectedParams[k]) + '</span>  ';
+                    injCount++;
                 }
-                injectedViewer.innerHTML = injectedDisplay || '<span style="color:#5a4f42;">No injections</span>';
+                injectedViewer.innerHTML = injectedDisplay || '<span style="color:#5a4f42;">No injections (' + injCount +
+                    ')</span>';
 
-                // Update URL with injections
-                var newUrl = buildUrl(url, state.injectedParams);
-                if (newUrl !== url && newUrl !== state.url) {
-                    // Only update if different
+                // Update session validity display
+                if (state.sessionChecked) {
+                    if (state.sessionValid === true) {
+                        sessionValidity.textContent = '✅ Valid';
+                        sessionValidity.className = 'value valid';
+                    } else if (state.sessionValid === false) {
+                        sessionValidity.textContent = '❌ Invalid / Expired';
+                        sessionValidity.className = 'value invalid';
+                    } else {
+                        sessionValidity.textContent = '⏳ Unknown';
+                        sessionValidity.className = 'value unknown';
+                    }
+                } else {
+                    sessionValidity.textContent = '⏳ Not checked';
+                    sessionValidity.className = 'value unknown';
                 }
+
+                // Update badges
+                if (state.c2sTested) {
+                    c2sResultBadge.textContent = state.c2sSuccess ? '✓ Vulnerable' : '✗ Not Vulnerable';
+                    c2sResultBadge.className = 'status-badge ' + (state.c2sSuccess ? 'success' : 'fail');
+                } else {
+                    c2sResultBadge.textContent = 'Not tested';
+                    c2sResultBadge.className = 'status-badge pending';
+                }
+
+                if (state.tamperTested) {
+                    tamperResultBadge.textContent = state.isTampered ? '✓ Tampered' : '✗ Not Tampered';
+                    tamperResultBadge.className = 'status-badge ' + (state.isTampered ? 'success' : 'fail');
+                } else {
+                    tamperResultBadge.textContent = 'Not tested';
+                    tamperResultBadge.className = 'status-badge pending';
+                }
+
+                updateBadgeCount();
 
                 // Hide overlay if iframe loaded
-                frameOverlay.style.display = url && url !== 'about:blank' ? 'none' : 'flex';
+                var hasContent = url && url !== 'about:blank' && url !== '';
+                frameOverlay.style.display = hasContent ? 'none' : 'flex';
             }
 
             // ─── LOAD URL ───
@@ -1180,11 +1468,74 @@
                 state.url = url;
                 urlInput.value = url;
                 gatewayFrame.src = url;
-                setStatus('loading...', '');
-                showToast('Loading: ' + url, 'info');
-                // Update UI after load
+                setStatus('loading...', 'loading');
+                showToast('Loading: ' + url.substring(0, 60) + '...', 'info');
+                frameOverlay.style.display = 'none';
+                // Reset session check
+                state.sessionChecked = false;
+                state.sessionValid = null;
                 setTimeout(updateUI, 1000);
                 setTimeout(updateUI, 3000);
+                // Check session after load
+                setTimeout(function() { checkSession(); }, 2000);
+            }
+
+            // ─── OPEN IN NEW TAB ───
+            function openInNewTab() {
+                var url = getCurrentUrl();
+                if (!url || url === 'about:blank') {
+                    url = urlInput.value.trim();
+                }
+                if (!url || url === 'about:blank') {
+                    showToast('No URL to open', 'error');
+                    return;
+                }
+                window.open(url, '_blank');
+                showToast('Opened in new tab', 'info');
+            }
+
+            // ─── CHECK SESSION ───
+            function checkSession() {
+                var url = getCurrentUrl();
+                if (!url || url === 'about:blank') {
+                    sessionLog.innerHTML = '<span class="warn">⚠ No URL loaded</span>';
+                    return;
+                }
+
+                sessionLog.innerHTML = '<span class="info">⤷ Checking session...</span>';
+                state.sessionChecked = true;
+
+                // Try to detect if session is valid by looking for error patterns in the URL
+                var errorPatterns = ['broken', 'invalid', 'expired', 'error', 'no longer valid'];
+                var foundError = false;
+                for (var i = 0; i < errorPatterns.length; i++) {
+                    if (url.toLowerCase().includes(errorPatterns[i])) {
+                        foundError = true;
+                        break;
+                    }
+                }
+
+                // Also check if the URL contains session_ but no amount (expired session often drops params)
+                var hasSession = url.includes('session_');
+                var hasAmount = url.match(/[?&]amount=/) || url.match(/[?&]price=/);
+
+                if (foundError || (hasSession && !hasAmount && url.includes('gateway'))) {
+                    state.sessionValid = false;
+                    sessionLog.innerHTML =
+                        '<span class="fail">✗ Session appears to be INVALID or EXPIRED</span><br/><span style="color:#5a4f42;font-size:0.5rem;">The link may have expired. Try generating a new session link.</span>';
+                    showToast('Session expired or invalid', 'error');
+                } else if (hasSession && hasAmount) {
+                    state.sessionValid = true;
+                    sessionLog.innerHTML =
+                        '<span class="success">✓ Session appears VALID</span><br/><span style="color:#5a4f42;font-size:0.5rem;">Session ID: ' +
+                        sanitize(state.sessionId || 'unknown') + '</span>';
+                    showToast('Session valid', 'success');
+                } else {
+                    state.sessionValid = null;
+                    sessionLog.innerHTML =
+                        '<span class="warn">⚠ Cannot determine session validity</span><br/><span style="color:#5a4f42;font-size:0.5rem;">Try loading the URL and checking manually.</span>';
+                }
+                updateUI();
             }
 
             // ─── INJECT FUNCTIONS ───
@@ -1194,15 +1545,34 @@
                     return;
                 }
                 state.injectedParams[key] = value;
-                updateUI();
-                // Reload frame with injected params
                 var current = getCurrentUrl();
                 var newUrl = buildUrl(current, state.injectedParams);
                 if (newUrl !== current) {
                     gatewayFrame.src = newUrl;
                     showToast('Injected: ' + key + '=' + value, 'success');
+                    setStatus('injected', 'success');
+                } else {
+                    // If URL didn't change, still update UI
+                    updateUI();
+                    showToast('Added param: ' + key + '=' + value, 'info');
                 }
-                setStatus('injected', 'success');
+                setTimeout(updateUI, 500);
+            }
+
+            function resetInjections() {
+                state.injectedParams = {};
+                var current = getCurrentUrl();
+                // Remove all injected params from URL
+                for (var k in state.injectedParams) {
+                    try {
+                        var u = new URL(current);
+                        u.searchParams.delete(k);
+                        current = u.toString();
+                    } catch (e) {}
+                }
+                gatewayFrame.src = current;
+                showToast('Injections reset', 'info');
+                setTimeout(updateUI, 500);
             }
 
             // ─── BUG SCANNERS ───
@@ -1232,25 +1602,34 @@
 
                 bugOutput.innerHTML =
                     '<span class="info">⤷ C2S test — forged callback:</span>\n' +
-                    '<span style="font-size:0.55rem;color:#6a5f52;word-break:break-all;">' + sanitize(forged) +
+                    '<span style="font-size:0.5rem;color:#6a5f52;word-break:break-all;">' + sanitize(forged) +
                     '</span>\n\n' +
                     '<span style="color:#5a4f42;">⬡ Did the server accept the forged callback?</span>\n' +
                     '<button class="btn-sm success" onclick="window.c2sResult(true)">✓ Yes — vulnerable</button> ' +
-                    '<button class="btn-sm danger" onclick="window.c2sResult(false)">✗ No — not vulnerable</button>';
+                    '<button class="btn-sm danger" onclick="window.c2sResult(false)">✗ No — not vulnerable</button> ' +
+                    '<button class="btn-sm warning" onclick="window.c2sResult(null)">⏳ Not sure</button>';
 
                 state.c2sTested = true;
                 showToast('C2S test ready — check server response', 'info');
+                updateUI();
             }
 
             window.c2sResult = function(success) {
-                state.c2sSuccess = success;
-                if (success) {
-                    bugOutput.innerHTML = '<span class="success">✓ C2S VULNERABLE</span> — Server accepted forged callback!';
+                if (success === true) {
+                    state.c2sSuccess = true;
+                    bugOutput.innerHTML = '<span class="success bold">✓ C2S VULNERABLE</span> — Server accepted forged callback!';
                     showToast('C2S vulnerability confirmed!', 'success');
-                } else {
-                    bugOutput.innerHTML = '<span class="fail">✗ C2S NOT VULNERABLE</span> — Server rejected forged callback.';
+                } else if (success === false) {
+                    state.c2sSuccess = false;
+                    bugOutput.innerHTML =
+                    '<span class="fail bold">✗ C2S NOT VULNERABLE</span> — Server rejected forged callback.';
                     showToast('C2S not vulnerable', 'info');
+                } else {
+                    bugOutput.innerHTML =
+                    '<span class="warn">⏳ C2S result uncertain — manual verification needed</span>';
                 }
+                state.c2sTested = true;
+                updateUI();
             };
 
             function scanPriceTamper() {
@@ -1284,20 +1663,24 @@
                     tamperedUrl += sep + 'amount=' + tamperedAmount.toFixed(2);
                 }
 
+                state.isTampered = true;
+                state.tamperTested = true;
+                state.tamperedAmount = tamperedAmount;
+
                 bugOutput.innerHTML =
                     '<span class="info">⤷ Price tamper test — original: ' + (state.currency === 'INR' ? '₹' : '$') +
                     ' ' + amount.toFixed(2) + ' → tampered: ' + (state.currency === 'INR' ? '₹' : '$') + ' ' +
                     tamperedAmount.toFixed(2) + '</span>\n' +
-                    '<span style="font-size:0.55rem;color:#6a5f52;word-break:break-all;">' + sanitize(tamperedUrl) +
+                    '<span style="font-size:0.5rem;color:#6a5f52;word-break:break-all;">' + sanitize(tamperedUrl) +
                     '</span>\n\n' +
                     '<span style="color:#5a4f42;">⬡ Load this URL in the browser and check if price changed</span>\n' +
                     '<button class="btn-sm success" onclick="window.loadTamperedUrl(\'' + sanitize(tamperedUrl) +
-                    '\')">⤷ Load tampered URL</button>';
+                    '\')">⤷ Load tampered URL</button> ' +
+                    '<button class="btn-sm warning" onclick="window.open(\'' + sanitize(tamperedUrl) +
+                    '\',\'_blank\')">⤷ Open in New Tab</button>';
 
-                state.tamperedUrl = tamperedUrl;
-                state.isTampered = true;
-                state.tamperedAmount = tamperedAmount;
                 showToast('Tampered URL ready — check in browser', 'warning');
+                updateUI();
             }
 
             window.loadTamperedUrl = function(url) {
@@ -1308,10 +1691,15 @@
 
             function scanAll() {
                 bugOutput.innerHTML = '<span class="info">⤷ Running full scan...</span>\n';
-                scanC2S();
+                // First check session
+                checkSession();
+                setTimeout(function() {
+                    scanC2S();
+                }, 500);
                 setTimeout(function() {
                     scanPriceTamper();
-                }, 500);
+                }, 1000);
+                showToast('Full scan started', 'info');
             }
 
             // ─── REDIRECT WITH TAMPER ───
@@ -1380,9 +1768,40 @@
                 qrPopup.classList.add('show');
             }
 
+            // ─── COPY FUNCTIONS ───
+            function copyText(text, msg) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(function() {
+                        showToast(msg || 'Copied!', 'success');
+                    }).catch(function() {
+                        fallbackCopy(text, msg);
+                    });
+                } else {
+                    fallbackCopy(text, msg);
+                }
+            }
+
+            function fallbackCopy(text, msg) {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    showToast(msg || 'Copied!', 'success');
+                } catch (e) {
+                    showToast('Copy failed — select manually', 'error');
+                }
+                document.body.removeChild(ta);
+            }
+
             // ─── EVENTS ───
             loadBtn.addEventListener('click', function() { loadUrl(urlInput.value); });
             reloadBtn.addEventListener('click', function() { loadUrl(getCurrentUrl() || urlInput.value); });
+            openNewTabBtn.addEventListener('click', openInNewTab);
+            openNewTabSessionBtn.addEventListener('click', openInNewTab);
             refreshFrameBtn.addEventListener('click', function() { gatewayFrame.src = gatewayFrame.src; });
 
             goBackBtn.addEventListener('click', function() {
@@ -1391,6 +1810,12 @@
             goForwardBtn.addEventListener('click', function() {
                 try { gatewayFrame.contentWindow.history.forward(); } catch (e) { showToast('Cannot go forward',
                         'error'); }
+            });
+
+            clearCacheBtn.addEventListener('click', function() {
+                gatewayFrame.src = 'about:blank';
+                showToast('Cleared', 'info');
+                setTimeout(updateUI, 200);
             });
 
             urlInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') loadUrl(this.value); });
@@ -1408,26 +1833,60 @@
                 var v = manualValue.value.trim();
                 if (k && v) injectParam(k, v);
             });
+            resetInjectionsBtn.addEventListener('click', resetInjections);
 
             redirectWithTamperBtn.addEventListener('click', redirectWithTamper);
             showQrBtn.addEventListener('click', showQrPopup);
             qrPopupClose.addEventListener('click', function() { qrPopup.classList.remove('show'); });
             qrPopup.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
 
+            copyUpiBtn.addEventListener('click', function() {
+                var upi = qrPopupUpiId.textContent.replace('UPI: ', '');
+                copyText(upi, 'UPI ID copied: ' + upi);
+            });
+
+            copyParamsBtn.addEventListener('click', function() {
+                var url = getCurrentUrl();
+                var params = extractParams(url);
+                var text = '';
+                for (var k in params) {
+                    text += k + '=' + params[k] + '\n';
+                }
+                copyText(text || 'No params', 'Params copied');
+            });
+
+            checkSessionBtn.addEventListener('click', checkSession);
+            refreshSessionBtn.addEventListener('click', function() {
+                state.sessionChecked = false;
+                state.sessionValid = null;
+                checkSession();
+            });
+
             scanC2SBtn.addEventListener('click', scanC2S);
             scanTamperBtn.addEventListener('click', scanPriceTamper);
             scanAllBtn.addEventListener('click', scanAll);
+            clearBugsBtn.addEventListener('click', function() {
+                bugOutput.innerHTML = '<span style="color:#5a4f42;">Cleared</span>';
+                state.c2sTested = false;
+                state.tamperTested = false;
+                updateUI();
+            });
 
             // ─── IFRAME LOAD EVENTS ───
             gatewayFrame.addEventListener('load', function() {
-                setTimeout(updateUI, 500);
+                setTimeout(updateUI, 300);
                 setStatus('loaded', 'success');
-                // Try to capture URL
                 try {
                     var url = gatewayFrame.contentWindow.location.href;
                     if (url && url !== 'about:blank') {
                         state.url = url;
                         currentUrlDisplay.textContent = url;
+                        // Check for error patterns
+                        if (url.toLowerCase().includes('broken') || url.toLowerCase().includes('invalid') || url
+                            .toLowerCase().includes('expired')) {
+                            gatewayBadge.className = 'badge error';
+                            showToast('⚠ Session may be expired — check Session tab', 'error');
+                        }
                     }
                 } catch (e) { /* cross-origin */ }
                 frameOverlay.style.display = 'none';
@@ -1435,7 +1894,7 @@
 
             // ─── BOOT ───
             if (urlInput.value.trim()) {
-                setTimeout(function() { loadUrl(urlInput.value); }, 300);
+                setTimeout(function() { loadUrl(urlInput.value); }, 400);
             } else {
                 gatewayBadge.textContent = '⏳ awaiting link';
                 gatewayBadge.className = 'badge';
@@ -1448,17 +1907,17 @@
                 if (gatewayFrame.src && gatewayFrame.src !== 'about:blank') {
                     try {
                         var u = gatewayFrame.contentWindow.location.href;
-                        if (u && u !== state.url) {
+                        if (u && u !== state.url && u !== 'about:blank') {
                             state.url = u;
                             updateUI();
                         }
-                    } catch (e) { /* cross-origin — use current URL */ }
+                    } catch (e) { /* cross-origin */ }
                 }
             }, 3000);
 
-            console.log('⌬ Burp-Style Tool loaded · Real-time browser + bug detection');
-            console.log('📌 Use Manual tab to inject OTP, phone, custom params');
-            console.log('📌 Bugs tab scans C2S and price tampering');
+            console.log('⌬ Burp-Style Tool v4.0 loaded · Error handling + session check');
+            console.log('📌 If you see "Broken Link", the session is expired — click Open in New Tab');
+            console.log('📌 Check Session tab to test validity');
         })();
     </script>
 
