@@ -195,7 +195,7 @@
                     '<span class="fail bold">⚠️ PRICE TAMPER VULNERABLE!</span>\n' +
                     '<span class="warn">' + esc(res.evidence) + '</span>\n' +
                     (res.tamperedUrl ? '<span style="font-size:0.4rem;color:#5a4f42;word-break:break-all;">' + esc(res.tamperedUrl) + '</span>' : '') +
-                    '\n<span class="success">→ BurpSuite se manually order karke confirm karo!</span>';
+                    '\n<span class="success">→ Verify manually with BurpSuite!</span>';
                 showToast('⚠ Price tamper VULNERABLE — manual verify!', 'warning');
             } else if (res.skipped) {
                 tamperOutput.innerHTML = '<span class="warn">⏭ ' + esc(res.evidence) + '</span>';
@@ -203,7 +203,7 @@
                 tamperOutput.innerHTML =
                     '<span class="success">✅ No clear signal on ₹1 tamper</span>\n' +
                     '<span style="color:#5a4f42;">' + esc(res.evidence) + '</span>\n' +
-                    '<span class="warn">→ Tampered URL iframe me check karo (New Tab)</span>';
+                    '<span class="warn">→ Check the tampered URL in a new tab for manual verification</span>';
                 showToast('No clear tamper signal — manual verify', 'info');
             }
             updateVerdict();
@@ -228,7 +228,7 @@
                 c2sOutput.innerHTML =
                     '<span class="fail bold">⚠️ CANCEL→SUCCESS VULNERABLE!</span>\n' +
                     '<span class="warn">' + esc(res.evidence) + '</span>\n' +
-                    '<span class="success">→ Order cancel hokar bhi SUCCESS ho gaya — BurpSuite se verify karo!</span>';
+                    '<span class="success">→ Order flipped from CANCEL to SUCCESS — verify with BurpSuite!</span>';
                 showToast('⚠ Cancel→Success VULNERABLE!', 'warning');
             } else if (res.skipped) {
                 c2sOutput.innerHTML = '<span class="warn">⏭ ' + esc(res.evidence) + '</span>';
@@ -300,7 +300,7 @@
                 verdictBox.innerHTML = '⚠️ SITE VULNERABLE — Price Tamper / Cancel→Success possible!';
                 verdictBox.className = 'verdict vuln';
             } else {
-                verdictBox.innerHTML = '✅ No clear vulnerability signal — manual verify karo';
+                verdictBox.innerHTML = '✅ No clear vulnerability signal — verify manually';
                 verdictBox.className = 'verdict safe';
             }
             verdictBox.style.display = 'block';
@@ -320,7 +320,7 @@
     function captureCancelUrl() {
         var url = getCurrentUrl();
         if (!url || url === 'about:blank') {
-            cancelUrlViewer.innerHTML = '<span class="fail">⚠ No URL in frame — cancel pehle karo</span>';
+            cancelUrlViewer.innerHTML = '<span class="fail">⚠ No URL in frame — cancel the payment first</span>';
             return;
         }
         state.cancelUrl = url;
@@ -330,7 +330,7 @@
 
     function forgeSuccess() {
         if (!state.cancelUrl && !state.url) {
-            cancelTestOutput.innerHTML = '<span class="fail">⚠ Pehle cancel URL capture karo ya URL load karo</span>';
+            cancelTestOutput.innerHTML = '<span class="fail">⚠ Capture the cancel URL or load a URL first</span>';
             return;
         }
         var url = state.url || state.cancelUrl;
@@ -342,7 +342,7 @@
                 cancelTestOutput.innerHTML =
                     '<span class="fail bold">⚠️ CANCEL→SUCCESS VULNERABLE!</span>\n' +
                     '<span class="warn">' + esc(res.evidence) + '</span>\n' +
-                    '<span class="success">→ Order cancel → success flip hua! BurpSuite se verify karo.</span>';
+                    '<span class="success">→ Order flipped CANCEL → SUCCESS! Verify with BurpSuite.</span>';
                 showToast('⚠ Cancel→Success VULNERABLE!', 'warning');
             } else {
                 cancelTestOutput.innerHTML =
@@ -368,7 +368,7 @@
     function startBatch() {
         var items = BatchProcessor.parseInput(batchInput.value);
         if (items.length === 0) {
-            showToast('Koi valid URL nahi mila', 'error');
+            showToast('No valid URLs found', 'error');
             return;
         }
         BatchProcessor.clearQueue();
@@ -432,7 +432,7 @@
     captureCancelBtn.addEventListener('click', captureCancelUrl);
     usePastedCancelBtn.addEventListener('click', function() {
         var pasted = cancelUrlInput.value.trim();
-        if (!pasted) { showToast('Cancel URL paste karo pehle', 'error'); return; }
+        if (!pasted) { showToast('Paste the cancel URL first', 'error'); return; }
         if (!pasted.startsWith('http')) pasted = 'https://' + pasted;
         state.cancelUrl = pasted;
         cancelUrlViewer.innerHTML = '<span class="param">Pasted:</span> <span class="value">' + esc(pasted) + '</span>';
@@ -440,7 +440,7 @@
     });
     openNewTabCancelBtn.addEventListener('click', function() {
         if (state.cancelUrl) window.open(state.cancelUrl, '_blank');
-        else showToast('Pehle cancel URL capture karo', 'error');
+        else showToast('Capture the cancel URL first', 'error');
     });
     forgeSuccessBtn.addEventListener('click', forgeSuccess);
 
@@ -459,19 +459,19 @@
 
     exportJsonBtn.addEventListener('click', function() {
         var data = getReportData();
-        if (!data || (Array.isArray(data) && data.length === 0)) { showToast('Pehle scan karo', 'error'); return; }
+        if (!data || (Array.isArray(data) && data.length === 0)) { showToast('Run a scan first', 'error'); return; }
         ReportExporter.downloadJSON(data, 'archive-burp-' + Date.now() + '.json');
         showToast('JSON exported', 'success');
     });
     exportMdBtn.addEventListener('click', function() {
         var data = getReportData();
-        if (!data || (Array.isArray(data) && data.length === 0)) { showToast('Pehle scan karo', 'error'); return; }
+        if (!data || (Array.isArray(data) && data.length === 0)) { showToast('Run a scan first', 'error'); return; }
         ReportExporter.downloadMarkdown(data, 'archive-burp-' + Date.now() + '.md');
         showToast('Markdown exported', 'success');
     });
     exportCsvBtn.addEventListener('click', function() {
         var data = getReportData();
-        if (!data || (Array.isArray(data) && data.length === 0)) { showToast('Pehle scan karo', 'error'); return; }
+        if (!data || (Array.isArray(data) && data.length === 0)) { showToast('Run a scan first', 'error'); return; }
         ReportExporter.downloadCSV(data, 'archive-burp-' + Date.now() + '.csv');
         showToast('CSV exported', 'success');
     });

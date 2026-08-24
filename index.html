@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⌬ Archive Burp — Payment Gateway Vulnerability Tester v3.0</title>
+    <title>⌬ Archive Burp — Payment Gateway Vulnerability Tester</title>
+    <meta name="description" content="Test payment gateways for Price Tampering and Cancel-to-Success vulnerabilities.">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -11,7 +12,7 @@
     <!-- ======= TOP BAR ======= -->
     <div class="topbar">
         <div class="brand">⌬ <span>ARCHIVE BURP</span> <em>v3.0</em></div>
-        <input type="url" id="urlInput" placeholder="Paste gateway payment URL (any site)..." />
+        <input type="url" id="urlInput" placeholder="Paste gateway payment URL..." />
         <button class="btn primary" id="loadBtn">Load</button>
         <button class="btn" id="reloadBtn">⟲</button>
         <button class="btn warning" id="openNewTabBtn">New Tab</button>
@@ -35,8 +36,8 @@
                 <iframe id="gatewayFrame" sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-modals"></iframe>
                 <div class="overlay-msg" id="frameOverlay">
                     <span class="icon">⌬</span>
-                    Paste gateway payment URL → click <span style="color:#caca8a;">Load</span>
-                    <div class="sub">Then run the 2 bug tests on the right</div>
+                    Paste a gateway payment URL and click <span style="color:#caca8a;">Load</span>
+                    <div class="sub">Then run the vulnerability tests on the right</div>
                 </div>
             </div>
         </div>
@@ -53,9 +54,9 @@
 
             <div class="panel-content">
 
-                <!-- ===== TAB: TESTS (both bugs) ===== -->
+                <!-- ===== TAB: TESTS ===== -->
                 <div class="tab-content active" id="tabTests">
-                    <div style="font-size:0.45rem;color:#5a4f42;margin-bottom:0.1rem;">
+                    <div style="font-size:0.45rem;color:#5a4f42;margin-bottom:0.15rem;">
                         Detected: <span id="detectedGatewayName" style="color:#caca8a;">—</span>
                         &nbsp;|&nbsp; Amount: <span id="detectedAmount" style="color:#8aba8a;">—</span>
                         &nbsp;|&nbsp; Session: <span id="detectedSession" style="color:#8ab4c4;">—</span>
@@ -63,20 +64,20 @@
 
                     <div class="test-card">
                         <div class="test-title">1️⃣ Price Tamper</div>
-                        <div class="test-desc">Amount ko <b>₹1</b> / <b>₹0.01</b> me change karke dekho — agar ₹1 order ban jaye → VULNERABLE!</div>
+                        <div class="test-desc">Change any amount to <b>₹1</b> / <b>$0.01</b> and check if the gateway accepts the tampered order. If a ₹1 order is created → <b>VULNERABLE!</b></div>
                         <button class="btn primary block" id="scanTamperBtn">💰 Test Price Tamper (₹1)</button>
-                        <div class="bug-output" id="tamperOutput"><span style="color:#5a4f42;">Load URL pehle → Test dabao</span></div>
+                        <div class="bug-output" id="tamperOutput"><span style="color:#5a4f42;">Load a URL first, then run the test</span></div>
                     </div>
 
                     <div class="test-card">
                         <div class="test-title">2️⃣ Cancel → Success (C2S)</div>
-                        <div class="test-desc">Payment page pe <b>Cancel/Back</b> dabao → phir yahan <b>Capture Cancel URL</b> → <b>Forge Success</b> → agar order SUCCESS ho jaye → VULNERABLE!</div>
+                        <div class="test-desc">Click <b>Cancel / Back</b> on the payment page → then <b>Capture Cancel URL</b> → <b>Forge Success</b>. If the order flips to SUCCESS → <b>VULNERABLE!</b></div>
                         <button class="btn success block" id="scanC2SBtn">🚫 Test Cancel→Success</button>
-                        <div class="bug-output" id="c2sOutput"><span style="color:#5a4f42;">Cancel flow complete karke yahan test karo</span></div>
+                        <div class="bug-output" id="c2sOutput"><span style="color:#5a4f42;">Complete the cancel flow, then run the test</span></div>
                     </div>
 
                     <div class="test-card">
-                        <div class="test-title">⚡ Full Scan (Dono Test)</div>
+                        <div class="test-title">⚡ Full Scan (Both Tests)</div>
                         <button class="btn warning block" id="scanAllBtn">⚡ Run Both Tests</button>
                         <div class="verdict" id="verdictBox" style="display:none;"></div>
                     </div>
@@ -84,23 +85,23 @@
 
                 <!-- ===== TAB: CANCEL → SUCCESS ===== -->
                 <div class="tab-content" id="tabCancel">
-                    <div style="font-size:0.45rem;color:#5a4f42;margin-bottom:0.1rem;">Cancel→Success manual flow</div>
+                    <div style="font-size:0.45rem;color:#5a4f42;margin-bottom:0.15rem;">Cancel→Success manual workflow</div>
 
                     <div class="step-box">
-                        <b>Step 1:</b> Browser me payment page khula hai?<br>
+                        <b>Step 1:</b> Is the payment page open in the browser?<br>
                         <button class="btn-sm warning" id="openCancelPageBtn">Open Payment Page in Frame</button>
                     </div>
 
                     <div class="step-box">
-                        <b>Step 2:</b> Payment page pe <b>CANCEL / BACK / EXIT</b> dabao.<br>
-                        <span style="color:#5a4f42;">Fir frame ka final URL capture karo:</span><br>
+                        <b>Step 2:</b> Click <b>CANCEL / BACK / EXIT</b> on the payment page.<br>
+                        <span style="color:#5a4f42;">Then capture the final URL of the frame:</span><br>
                         <button class="btn-sm success" id="captureCancelBtn">📸 Capture Cancel URL</button>
                         <button class="btn-sm" id="openNewTabCancelBtn">Open Cancel URL in Tab</button>
                     </div>
 
                     <div class="step-box">
-                        <b>Ya phir cancel URL yahan paste karo:</b><br>
-                        <input type="text" id="cancelUrlInput" placeholder="https://gateway.com/cancel?txn_id=..." style="width:100%;background:#12100e;border:1px solid #2a2520;color:#d4cdc0;font-family:'Courier New',monospace;font-size:0.5rem;padding:0.2rem 0.4rem;border-radius:3px;margin-top:0.15rem;outline:none;" />
+                        <b>Or paste the cancel URL manually:</b><br>
+                        <input type="text" id="cancelUrlInput" placeholder="https://gateway.com/cancel?txn_id=..." style="width:100%;background:#12100e;border:1px solid #2a2520;color:#d4cdc0;font-family:'Courier New',monospace;font-size:0.5rem;padding:0.25rem 0.4rem;border-radius:3px;margin-top:0.15rem;outline:none;" />
                         <button class="btn-sm warning" id="usePastedCancelBtn" style="margin-top:0.15rem;">Use Pasted URL</button>
                     </div>
 
@@ -109,22 +110,22 @@
                     </div>
 
                     <div class="step-box">
-                        <b>Step 3:</b> Ab us cancel ko SUCCESS forge karo:<br>
+                        <b>Step 3:</b> Now forge the cancel into SUCCESS:<br>
                         <button class="btn danger block" id="forgeSuccessBtn">🔥 Forge Cancel → SUCCESS</button>
                     </div>
 
                     <div class="bug-output" id="cancelTestOutput">
-                        <span style="color:#5a4f42;">Cancel URL capture karke Forge Success dabao</span>
+                        <span style="color:#5a4f42;">Capture the cancel URL, then click Forge Success</span>
                     </div>
                 </div>
 
                 <!-- ===== TAB: BATCH ===== -->
                 <div class="tab-content" id="tabBatch">
-                    <div style="font-size:0.45rem;color:#5a4f42;margin-bottom:0.1rem;">
-                        Multiple URLs paste karo (ek line pe ek URL) — har ek pe dono tests auto chalege
+                    <div style="font-size:0.45rem;color:#5a4f42;margin-bottom:0.15rem;">
+                        Paste multiple URLs (one per line) — both tests will auto-run on each
                     </div>
                     <textarea id="batchInput" placeholder="https://api.cashfree.com/pg/view/gateway/session_XXX1&#10;https://payu.in/_payment/order_XXX2&#10;https://pay.google.com/gp/p/ui/pay_XXX3" rows="6"></textarea>
-                    <div style="display:flex;gap:0.2rem;flex-wrap:wrap;margin-top:0.15rem;">
+                    <div style="display:flex;gap:0.2rem;flex-wrap:wrap;margin-top:0.2rem;">
                         <button class="btn-sm success" id="batchStartBtn">▶ Start Batch</button>
                         <button class="btn-sm" id="batchStopBtn">⏹ Stop</button>
                         <button class="btn-sm" id="batchClearBtn">✗ Clear</button>
@@ -137,9 +138,9 @@
 
                 <!-- ===== TAB: REPORT ===== -->
                 <div class="tab-content" id="tabReport">
-                    <div style="font-size:0.45rem;color:#5a4f42;margin-bottom:0.1rem;">Export scan results</div>
+                    <div style="font-size:0.45rem;color:#5a4f42;margin-bottom:0.15rem;">Export scan results</div>
                     <div class="step-box">
-                        <b>Last scan / batch results</b> ko export karo:
+                        <b>Last scan / batch results</b> can be exported below:
                     </div>
                     <div style="display:flex;gap:0.2rem;flex-wrap:wrap;">
                         <button class="btn-sm success" id="exportJsonBtn">JSON</button>
@@ -147,7 +148,7 @@
                         <button class="btn-sm" id="exportCsvBtn">CSV</button>
                     </div>
                     <div class="request-viewer" id="reportViewer" style="min-height:80px;max-height:200px;">
-                        <span style="color:#5a4f42;">Scan run karke results yahan dikhege</span>
+                        <span style="color:#5a4f42;">Run a scan to see results here</span>
                     </div>
                 </div>
 
