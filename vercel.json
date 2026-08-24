@@ -1,48 +1,10 @@
 {
-  "name": "archive-burp-payment-tester",
   "version": 2,
-  "builds": [
-    {
-      "src": "proxy-server.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "server/webhook.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "css/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "js/**",
-      "use": "@vercel/static"
-    }
-  ],
   "routes": [
-    {
-      "src": "/api/webhook/(.*)",
-      "dest": "server/webhook.js"
-    },
-    {
-      "src": "/api/probe",
-      "dest": "proxy-server.js"
-    },
-    {
-      "src": "/proxy",
-      "dest": "proxy-server.js"
-    },
-    {
-      "src": "/health",
-      "dest": "proxy-server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "index.html"
-    }
+    { "src": "/api/webhook/(.*)", "dest": "/api/webhook" },
+    { "src": "/api/probe", "dest": "/api/proxy" },
+    { "src": "/proxy", "dest": "/api/proxy" },
+    { "src": "/health", "dest": "/api/proxy" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

@@ -38,6 +38,8 @@
     var forgeSuccessBtn = document.getElementById('forgeSuccessBtn');
     var cancelUrlViewer = document.getElementById('cancelUrlViewer');
     var cancelTestOutput = document.getElementById('cancelTestOutput');
+    var cancelUrlInput = document.getElementById('cancelUrlInput');
+    var usePastedCancelBtn = document.getElementById('usePastedCancelBtn');
 
     // Batch
     var batchInput = document.getElementById('batchInput');
@@ -96,7 +98,15 @@
     function getCurrentUrl() {
         try {
             var u = gatewayFrame.contentWindow.location.href;
-            if (u && u !== 'about:blank') return u;
+            if (u && u !== 'about:blank') {
+                // If we loaded through the proxy, decode the real URL
+                var proxyIdx = u.indexOf('/proxy?url=');
+                if (proxyIdx !== -1) {
+                    var enc = u.substring(proxyIdx + 11);
+                    try { return decodeURIComponent(enc); } catch (e) { return enc; }
+                }
+                return u;
+            }
         } catch (e) {}
         return state.url || urlInput.value;
     }
@@ -138,9 +148,12 @@
         }
         state.url = url;
         urlInput.value = url;
-        gatewayFrame.src = url;
-        setStatus('loading...', '');
-        showToast('Loading: ' + url.substring(0, 60) + '...', 'info');
+        // Load through proxy so X-Frame-Options is stripped
+        // and the gateway page actually renders in the iframe.
+        var proxyUrl = '/proxy?url=' + encodeURIComponent(url);
+        gatewayFrame.src = proxyUrl;
+        setStatus('loading (proxy)...', '');
+        showToast('Loading via proxy: ' + url.substring(0, 60) + '...', 'info');
         frameOverlay.style.display = 'none';
         setTimeout(updateUI, 1000);
         setTimeout(updateUI, 3000);
@@ -417,6 +430,14 @@
 
     openCancelPageBtn.addEventListener('click', function() { loadUrl(state.url || urlInput.value); });
     captureCancelBtn.addEventListener('click', captureCancelUrl);
+    usePastedCancelBtn.addEventListener('click', function() {
+        var pasted = cancelUrlInput.value.trim();
+        if (!pasted) { showToast('Cancel URL paste karo pehle', 'error'); return; }
+        if (!pasted.startsWith('http')) pasted = 'https://' + pasted;
+        state.cancelUrl = pasted;
+        cancelUrlViewer.innerHTML = '<span class="param">Pasted:</span> <span class="value">' + esc(pasted) + '</span>';
+        showToast('Cancel URL set!', 'success');
+    });
     openNewTabCancelBtn.addEventListener('click', function() {
         if (state.cancelUrl) window.open(state.cancelUrl, '_blank');
         else showToast('Pehle cancel URL capture karo', 'error');
@@ -461,6 +482,10 @@
         try {
             var url = gatewayFrame.contentWindow.location.href;
             if (url && url !== 'about:blank') {
+                var proxyIdx = url.indexOf('/proxy?url=');
+                if (proxyIdx !== -1) {
+                    try { url = decodeURIComponent(url.substring(proxyIdx + 11)); } catch (e) {}
+                }
                 state.url = url;
                 currentUrlDisplay.textContent = url;
             }
@@ -472,9 +497,16 @@
         if (gatewayFrame.src && gatewayFrame.src !== 'about:blank') {
             try {
                 var u = gatewayFrame.contentWindow.location.href;
-                if (u && u !== state.url && u !== 'about:blank') {
-                    state.url = u;
-                    updateUI();
+                var real = u;
+                if (u && u !== 'about:blank') {
+                    var proxyIdx = u.indexOf('/proxy?url=');
+                    if (proxyIdx !== -1) {
+                        try { real = decodeURIComponent(u.substring(proxyIdx + 11)); } catch (e) {}
+                    }
+                    if (real && real !== state.url) {
+                        state.url = real;
+                        updateUI();
+                    }
                 }
             } catch (e) {}
         }

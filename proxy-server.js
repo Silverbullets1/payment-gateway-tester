@@ -17,6 +17,10 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
+// Serve static files (index.html, css/, js/) — enables local `npm start`
+const path = require('path');
+app.use(express.static(path.join(__dirname)));
+
 /* ============================================================
  * SECURITY: SSRF & open-proxy protection
  * ============================================================ */
