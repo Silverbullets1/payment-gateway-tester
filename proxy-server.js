@@ -26,30 +26,10 @@ app.use(express.static(path.join(__dirname)));
  * ============================================================ */
 
 // Allowlist of gateway domains (add more as needed)
-const ALLOWED_DOMAINS = [
-    'razorpay.com', 'razorpay.in',
-    'payu.in', 'payumoney.com',
-    'ccavenue.com', 'ccavenu.in',
-    'instamojo.com',
-    'phonepe.com', 'pg.phonepe.com',
-    'pay.google.com', 'googlepay',
-    'paytm.com', 'paytm.in',
-    'cashfree.com', 'api.cashfree.com',
-    'stripe.com', 'api.stripe.com',
-    'paypal.com', 'api.paypal.com',
-    'braintree.com',
-    'adyen.com',
-    'juspay.in',
-    'easebuzz.in',
-    'pinelabs.com',
-    'billdesk.com', 'billdesk.in',
-    'worldpay.com',
-    '2checkout.com',
-    'squareup.com',
-    'klarna.com',
-    'afterpay.com',
-    'bluesnap.com'
-];
+// Any public domain allowed — the tool tests ANY site the user pastes.
+// Security is enforced via IP blocklist (SSRF protection) below,
+// NOT a domain allowlist (which would block legitimate targets).
+const ALLOWED_DOMAINS = null; // null = allow all public http/https domains
 
 // Blocked IP ranges (private, loopback, link-local, metadata)
 const BLOCKED_IPS = [
@@ -73,8 +53,10 @@ function isAllowedDomain(url) {
     try {
         const u = new URL(url);
         const host = u.hostname.toLowerCase();
+        // Always block internal/private hosts (SSRF protection)
         if (isBlockedHost(host)) return false;
-        return ALLOWED_DOMAINS.some(d => host === d || host.endsWith('.' + d));
+        // Allow all other public domains
+        return true;
     } catch (e) {
         return false;
     }
