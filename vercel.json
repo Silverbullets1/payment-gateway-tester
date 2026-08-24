@@ -3,7 +3,9 @@
   "builds": [
     { "src": "css/**", "use": "@vercel/static" },
     { "src": "js/**", "use": "@vercel/static" },
+    { "src": "icons/**", "use": "@vercel/static" },
     { "src": "index.html", "use": "@vercel/static" },
+    { "src": "manifest.json", "use": "@vercel/static" },
     { "src": "api/proxy.js", "use": "@vercel/node" },
     { "src": "api/webhook.js", "use": "@vercel/node" }
   ],
@@ -14,6 +16,8 @@
     { "src": "/health", "dest": "/api/proxy.js" },
     { "src": "/css/(.*)", "dest": "/css/$1" },
     { "src": "/js/(.*)", "dest": "/js/$1" },
+    { "src": "/icons/(.*)", "dest": "/icons/$1" },
+    { "src": "/manifest.json", "dest": "/manifest.json" },
     { "src": "/(.*)\\.(ico|png|jpg|svg|woff2?|ttf|eot)(\\?.*)?$", "dest": "/$1.$2" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
