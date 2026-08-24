@@ -1,11 +1,12 @@
 {
-  "name": "payment-gateway-proxy",
-  "version": "1.0.0",
-  "description": "Proxy server to bypass X-Frame-Options for payment gateway testing",
+  "name": "archive-burp-payment-tester",
+  "version": "3.0.0",
+  "description": "⌬ Archive Burp — Payment Gateway Vulnerability Tester. Tests: Price Tamper (₹1) + Cancel→Success (C2S) on any payment gateway.",
   "main": "proxy-server.js",
   "scripts": {
     "start": "node proxy-server.js",
-    "dev": "nodemon proxy-server.js"
+    "dev": "nodemon proxy-server.js",
+    "webhook": "node server/webhook.js"
   },
   "dependencies": {
     "express": "^4.18.2",
