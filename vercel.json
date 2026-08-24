@@ -1,10 +1,20 @@
 {
   "version": 2,
+  "builds": [
+    { "src": "css/**", "use": "@vercel/static" },
+    { "src": "js/**", "use": "@vercel/static" },
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "api/proxy.js", "use": "@vercel/node" },
+    { "src": "api/webhook.js", "use": "@vercel/node" }
+  ],
   "routes": [
     { "src": "/api/webhook/(.*)", "dest": "/api/webhook" },
     { "src": "/api/probe", "dest": "/api/proxy" },
     { "src": "/proxy", "dest": "/api/proxy" },
     { "src": "/health", "dest": "/api/proxy" },
+    { "src": "/css/(.*)", "dest": "/css/$1" },
+    { "src": "/js/(.*)", "dest": "/js/$1" },
+    { "src": "/(.*)\\.(ico|png|jpg|svg|woff2?|ttf|eot)(\\?.*)?$", "dest": "/$1.$2" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
